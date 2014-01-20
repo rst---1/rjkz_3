@@ -1,0 +1,94 @@
+#! /usr/bin/gnuplot -persist
+#векторно поле
+#график функции U_z
+#сечения Tau_zx по x
+#сечения Tau_zy по y
+LeftX = -0.5
+RightX = 0.5
+LeftY = -3.386363
+RightY = 3.386363
+SectionDX = 0.05
+SectionDY = 0.3
+
+
+set term png enhanced size 1280,1024#1280, 1024
+#set output "c.sh.Векторное поле.png"
+set xlabel "XX" font "Helvetica,18"
+set bmargin 4
+set ylabel "YY" font "Helvetica,18"
+#set xrange [LeftX+0.5*LeftX:RightX+0.5*RightX]
+#set yrange [LeftY+0.5*LeftY:RightY+0.5*RightY]
+#plot '/home/rst/deal.II/rjkz_2/Ftau.gpl' w vec
+#==============================================================
+set output "c.sh.U_z.png"
+set xrange [LeftX:RightX]
+set yrange [LeftY:RightY]
+set view 55,135
+splot '/home/rst/deal.II/rjkz_2/U_z.gpl'
+#==============================================================
+
+
+
+
+
+#==============================================================
+set output "c.sh.Tau_zy при dy=0.png"
+set xrange [LeftX:RightX]
+set yrange [LeftY:LeftY+SectionDY/5]
+set view 90,0
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "c.sh.Tau_zy при dy=0.25.png"
+set xrange [LeftX:RightX]
+set yrange [LeftY+(RightY-LeftY)*0.25:LeftY+(RightY-LeftY)*0.25+SectionDY]
+set view 90,0
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "c.sh.Tau_zy при dy=0.5.png"
+set xrange [LeftX:RightX]
+set yrange [LeftY+(RightY-LeftY)*0.5:LeftY+(RightY-LeftY)*0.5+SectionDY]
+set view 90,0
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "c.sh.Tau_zy при dy=0.75.png"
+set xrange [LeftX:RightX]
+set yrange [LeftY+(RightY-LeftY)*0.75:LeftY+(RightY-LeftY)*0.75+SectionDY]
+set view 90,0
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "c.sh.Tau_zy при dy=1.png"
+set xrange [LeftX:RightX]
+set yrange [RightY-SectionDY/5:RightY]
+set view 90,0
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+
+
+
+
+
+#==============================================================
+set output "c.sh.Tau_zx при dy=0.png"
+set xrange [LeftX:RightX]
+set yrange [LeftY:LeftY+SectionDY/5]
+set view 90,0
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:3
+#==============================================================
+set output "c.sh.Tau_zx при dy=0.5.png"
+set xrange [LeftX:RightX]
+set yrange [LeftY+(RightY-LeftY)*0.5:LeftY+(RightY-LeftY)*0.5+SectionDY]
+set view 90,0
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:3
+#==============================================================
+set output "c.sh.Tau_zx при dy=1.png"
+set xrange [LeftX:RightX]
+set yrange [RightY-SectionDY/5:RightY]
+set view 90,0
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:3
+#==============================================================
+
+
+
+
+
+

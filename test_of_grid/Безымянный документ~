@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# полный путь до скрипта
+ABSOLUTE_FILENAME=`readlink -e "$0"`
+# каталог в котором лежит скрипт
+DIRECTORY=`dirname "$ABSOLUTE_FILENAME"`
+
+
+
+"$DIRECTORY/3_.sh" "$A_Tau_zy_x_01" "$D_Tau_zy_x_01" "3"

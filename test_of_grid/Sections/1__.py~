@@ -1,0 +1,784 @@
+#!/usr/bin/pvpython
+DIRECTORY = '/home/rst/deal.II.8.0/rjkz_3/test_of_grid/Sections'
+TOLERANCE_OF_DELAUNAY2D = 0.0
+DIRECTORY_OF_FTAU_FILE_BoxGrid = "/home/rst/deal.II.8.0/rjkz_3/test_of_grid/1layer 1_to_1_boxgrid.csv"
+
+#filter "Slice"
+sliceFilter_1 = Slice()
+Show(sliceFilter_1)
+Render()
+#--------------A : 0.003 0.166 0.25 0.33 0.5 0.66 0.75 0.833 0.997 
+Slice_x_1 = -0.491
+Slice_x_2 = -0.333
+Slice_x_3 = -0.25
+Slice_x_4 = -0.166
+Slice_x_5 = 0.0
+Slice_x_6 = 0.166
+Slice_x_7 = 0.25
+Slice_x_8 = 0.333
+Slice_x_9 = 0.491
+
+Slice_y_1 = -0.491
+Slice_y_2 = -0.333
+Slice_y_3 = -0.25
+Slice_y_4 = -0.166
+Slice_y_5 = 0.0
+Slice_y_6 = 0.166
+Slice_y_7 = 0.25
+Slice_y_8 = 0.333
+Slice_y_9 = 0.491
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [Slice_x_1,0.0,0.0]
+sliceFilter_1.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx x("+str(Slice_x_1)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [Slice_x_2,0.0,0.0]
+sliceFilter_1.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx x("+str(Slice_x_2)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [Slice_x_3,0.0,0.0]
+sliceFilter_1.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx x("+str(Slice_x_3)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [Slice_x_4,0.0,0.0]
+sliceFilter_1.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx x("+str(Slice_x_4)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [Slice_x_5,0.0,0.0]
+sliceFilter_1.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx x("+str(Slice_x_5)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [Slice_x_6,0.0,0.0]
+sliceFilter_1.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx x("+str(Slice_x_6)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [Slice_x_7,0.0,0.0]
+sliceFilter_1.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx x("+str(Slice_x_7)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [Slice_x_8,0.0,0.0]
+sliceFilter_1.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx x("+str(Slice_x_8)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [Slice_x_9,0.0,0.0]
+sliceFilter_1.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx x("+str(Slice_x_9)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+
+
+
+
+
+
+
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [0.0,Slice_y_1,0.0]
+sliceFilter_1.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx y("+str(Slice_y_1)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [0.0,Slice_y_2,0.0]
+sliceFilter_1.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx y("+str(Slice_y_2)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [0.0,Slice_y_3,0.0]
+sliceFilter_1.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx y("+str(Slice_y_3)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [0.0,Slice_y_4,0.0]
+sliceFilter_1.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx y("+str(Slice_y_4)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [0.0,Slice_y_5,0.0]
+sliceFilter_1.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx y("+str(Slice_y_5)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [0.0,Slice_y_6,0.0]
+sliceFilter_1.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx y("+str(Slice_y_6)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [0.0,Slice_y_7,0.0]
+sliceFilter_1.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx y("+str(Slice_y_7)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [0.0,Slice_y_8,0.0]
+sliceFilter_1.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx y("+str(Slice_y_8)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_1.SliceType.Origin = [0.0,Slice_y_9,0.0]
+sliceFilter_1.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zx y("+str(Slice_y_9)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#Delete filters1
+Delete(sliceFilter_1)
+Delete(ClipFilter_1)
+Delete(Delaunay2D_1)
+Delete(TableToPoints_1)
+Delete(reader_1)
+
+#open file
+from paraview.simple import *
+reader_2 = CSVReader(FileName = [DIRECTORY_OF_FTAU_FILE_BoxGrid])
+
+#filter "Table To Points"
+TableToPoints_2 = TableToPoints()
+TableToPoints_2.XColumn = "Points:0"
+TableToPoints_2.YColumn = "Points:1"
+TableToPoints_2.ZColumn = "Points:3"
+Render()
+
+#filter "Delaunay2D"
+SetActiveSource(TableToPoints_2)
+Delaunay2D_2 = Delaunay2D()
+Delaunay2D_2.Tolerance = TOLERANCE_OF_DELAUNAY2D
+Show()
+Render()
+
+#filter "Clip"
+ClipFilter_2 = Clip()
+ClipFilter_2.ClipType = "Box"
+ClipFilter_2.ClipType.Scale = [ 0.414, 0.414, 2.0 ]
+Render()
+
+#filter "Slice"
+sliceFilter_2 = Slice()
+Show(sliceFilter_2)
+Render()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [Slice_x_1,0.0,0.0]
+sliceFilter_2.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy x("+str(Slice_x_1)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [Slice_x_2,0.0,0.0]
+sliceFilter_2.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy x("+str(Slice_x_2)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [Slice_x_3,0.0,0.0]
+sliceFilter_2.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy x("+str(Slice_x_3)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [Slice_x_4,0.0,0.0]
+sliceFilter_2.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy x("+str(Slice_x_4)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [Slice_x_5,0.0,0.0]
+sliceFilter_2.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy x("+str(Slice_x_5)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [Slice_x_6,0.0,0.0]
+sliceFilter_2.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy x("+str(Slice_x_6)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [Slice_x_7,0.0,0.0]
+sliceFilter_2.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy x("+str(Slice_x_7)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [Slice_x_8,0.0,0.0]
+sliceFilter_2.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy x("+str(Slice_x_8)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [Slice_x_9,0.0,0.0]
+sliceFilter_2.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy x("+str(Slice_x_9)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+
+
+
+
+
+
+
+
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [0.0,Slice_y_1,0.0]
+sliceFilter_2.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy y("+str(Slice_y_1)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [0.0,Slice_y_2,0.0]
+sliceFilter_2.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy y("+str(Slice_y_2)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [0.0,Slice_y_3,0.0]
+sliceFilter_2.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy y("+str(Slice_y_3)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [0.0,Slice_y_4,0.0]
+sliceFilter_2.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy y("+str(Slice_y_4)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [0.0,Slice_y_5,0.0]
+sliceFilter_2.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy y("+str(Slice_y_5)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [0.0,Slice_y_6,0.0]
+sliceFilter_2.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy y("+str(Slice_y_6)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [0.0,Slice_y_7,0.0]
+sliceFilter_2.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy y("+str(Slice_y_7)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [0.0,Slice_y_8,0.0]
+sliceFilter_2.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy y("+str(Slice_y_8)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_2.SliceType.Origin = [0.0,Slice_y_9,0.0]
+sliceFilter_2.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid tau_zy y("+str(Slice_y_9)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Delete filters2
+Delete(sliceFilter_2)
+Delete(ClipFilter_2)
+Delete(Delaunay2D_2)
+Delete(TableToPoints_2)
+Delete(reader_2)
+
+#open file
+from paraview.simple import *
+reader_7 = CSVReader(FileName = [DIRECTORY_OF_FTAU_FILE_BoxGrid])
+
+#filter "Table To Points"
+TableToPoints_7 = TableToPoints()
+TableToPoints_7.XColumn = "Points:0"
+TableToPoints_7.YColumn = "Points:1"
+TableToPoints_7.ZColumn = "Points:4"
+Render()
+
+#filter "Delaunay2D"
+SetActiveSource(TableToPoints_7)
+Delaunay2D_7 = Delaunay2D()
+Delaunay2D_7.Tolerance = TOLERANCE_OF_DELAUNAY2D
+Show()
+Render()
+
+#filter "Clip"
+ClipFilter_7 = Clip()
+ClipFilter_7.ClipType = "Box"
+ClipFilter_7.ClipType.Scale = [ 0.414, 0.414, 2.0 ]
+Render()
+
+#filter "Slice"
+sliceFilter_7 = Slice()
+Show(sliceFilter_7)
+Render()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [Slice_x_1,0.0,0.0]
+sliceFilter_7.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx x("+str(Slice_x_1)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [Slice_x_2,0.0,0.0]
+sliceFilter_7.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx x("+str(Slice_x_2)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [Slice_x_3,0.0,0.0]
+sliceFilter_7.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx x("+str(Slice_x_3)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [Slice_x_4,0.0,0.0]
+sliceFilter_7.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx x("+str(Slice_x_4)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [Slice_x_5,0.0,0.0]
+sliceFilter_7.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx x("+str(Slice_x_5)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [Slice_x_6,0.0,0.0]
+sliceFilter_7.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx x("+str(Slice_x_6)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [Slice_x_7,0.0,0.0]
+sliceFilter_7.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx x("+str(Slice_x_7)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [Slice_x_8,0.0,0.0]
+sliceFilter_7.SliceType.Normal = [1.0,0.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx x("+str(Slice_x_8)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [Slice_x_9,0.0,0.0]
+sliceFilter_7.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx x("+str(Slice_x_9)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+
+
+
+
+
+
+
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [0.0,Slice_y_1,0.0]
+sliceFilter_7.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx y("+str(Slice_y_1)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [0.0,Slice_y_2,0.0]
+sliceFilter_7.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx y("+str(Slice_y_2)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [0.0,Slice_y_3,0.0]
+sliceFilter_7.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx y("+str(Slice_y_3)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [0.0,Slice_y_4,0.0]
+sliceFilter_7.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx y("+str(Slice_y_4)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [0.0,Slice_y_5,0.0]
+sliceFilter_7.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx y("+str(Slice_y_5)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [0.0,Slice_y_6,0.0]
+sliceFilter_7.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx y("+str(Slice_y_6)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [0.0,Slice_y_7,0.0]
+sliceFilter_7.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx y("+str(Slice_y_7)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [0.0,Slice_y_8,0.0]
+sliceFilter_7.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx y("+str(Slice_y_8)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_7.SliceType.Origin = [0.0,Slice_y_9,0.0]
+sliceFilter_7.SliceType.Normal = [0.0,1.0,0.0]
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zx y("+str(Slice_y_9)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#=========================================================
+#Delete filters7
+Delete(sliceFilter_7)
+Delete(ClipFilter_7)
+Delete(Delaunay2D_7)
+Delete(TableToPoints_7)
+Delete(reader_7)
+
+#open file
+from paraview.simple import *
+reader_8 = CSVReader(FileName = [DIRECTORY_OF_FTAU_FILE_BoxGrid])
+
+#filter "Table To Points"
+TableToPoints_8 = TableToPoints()
+TableToPoints_8.XColumn = "Points:0"
+TableToPoints_8.YColumn = "Points:1"
+TableToPoints_8.ZColumn = "Points:5"
+Render()
+
+#filter "Delaunay2D"
+SetActiveSource(TableToPoints_8)
+Delaunay2D_8 = Delaunay2D()
+Delaunay2D_8.Tolerance = TOLERANCE_OF_DELAUNAY2D
+Show()
+Render()
+
+#filter "Clip"
+ClipFilter_8 = Clip()
+ClipFilter_8.ClipType = "Box"
+ClipFilter_8.ClipType.Scale = [ 0.414, 0.414, 2.0 ]
+Render()
+
+#filter "Slice"
+sliceFilter_8 = Slice()
+Show(sliceFilter_8)
+Render()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [Slice_x_1,0.0,0.0]
+sliceFilter_8.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy x("+str(Slice_x_1)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [Slice_x_2,0.0,0.0]
+sliceFilter_8.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy x("+str(Slice_x_2)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [Slice_x_3,0.0,0.0]
+sliceFilter_8.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy x("+str(Slice_x_3)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [Slice_x_4,0.0,0.0]
+sliceFilter_8.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy x("+str(Slice_x_4)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [Slice_x_5,0.0,0.0]
+sliceFilter_8.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy x("+str(Slice_x_5)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [Slice_x_6,0.0,0.0]
+sliceFilter_8.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy x("+str(Slice_x_6)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [Slice_x_7,0.0,0.0]
+sliceFilter_8.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy x("+str(Slice_x_7)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [Slice_x_8,0.0,0.0]
+sliceFilter_8.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy x("+str(Slice_x_8)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [Slice_x_9,0.0,0.0]
+sliceFilter_8.SliceType.Normal = [1.0,0.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy x("+str(Slice_x_9)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+
+
+
+
+
+
+
+
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [0.0,Slice_y_1,0.0]
+sliceFilter_8.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy y("+str(Slice_y_1)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [0.0,Slice_y_2,0.0]
+sliceFilter_8.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy y("+str(Slice_y_2)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [0.0,Slice_y_3,0.0]
+sliceFilter_8.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy y("+str(Slice_y_3)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [0.0,Slice_y_4,0.0]
+sliceFilter_8.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy y("+str(Slice_y_4)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [0.0,Slice_y_5,0.0]
+sliceFilter_8.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy y("+str(Slice_y_5)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [0.0,Slice_y_6,0.0]
+sliceFilter_8.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy y("+str(Slice_y_6)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [0.0,Slice_y_7,0.0]
+sliceFilter_8.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy y("+str(Slice_y_7)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [0.0,Slice_y_8,0.0]
+sliceFilter_8.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy y("+str(Slice_y_8)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+sliceFilter_8.SliceType.Origin = [0.0,Slice_y_9,0.0]
+sliceFilter_8.SliceType.Normal = [0.0,1.0,0.0]
+Render()
+writer = CreateWriter(DIRECTORY + "/BoxGrid_Analytic tau_zy y("+str(Slice_y_9)+").csv")
+writer.WriteAllTimeSteps = 1
+writer.FieldAssociation = "Points"
+writer.UpdatePipeline()
+#---------------------------------------------------------
+#Delete filters2
+Delete(sliceFilter_8)
+Delete(ClipFilter_8)
+Delete(Delaunay2D_8)
+Delete(TableToPoints_8)
+Delete(reader_8)
+

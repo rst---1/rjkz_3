@@ -1,0 +1,11 @@
+	Номер задачи: 4
+   Number of active cells: 10944 
+    Total number of cells: 13680 
+
+ E_z1 =      10.00000000
+
+ E_z2 =       1.00000000
+
+ E_z3 =      10.00000000
+
+ nui =       0.25000000

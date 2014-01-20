@@ -1,0 +1,30 @@
+#!/usr/bin/pvpython
+DIRECTORY = '/home/rst/deal.II.8.0/rjkz_3/test_of_grid/Sections'
+TOLERANCE_OF_DELAUNAY2D = 0.0
+DIRECTORY_OF_FTAU_FILE_BoxGrid = "/home/rst/deal.II.8.0/rjkz_3/test_of_grid/1layer 1_to_1_boxgrid.csv"
+
+
+#open file
+from paraview.simple import *
+reader_1 = CSVReader(FileName = [DIRECTORY_OF_FTAU_FILE_BoxGrid])
+
+#filter "Table To Points"
+TableToPoints_1 = TableToPoints()
+TableToPoints_1.XColumn = "Points:0"
+TableToPoints_1.YColumn = "Points:1"
+TableToPoints_1.ZColumn = "Points:2"
+Render()
+
+#filter "Delaunay2D"
+SetActiveSource(TableToPoints_1)
+Delaunay2D_1 = Delaunay2D()
+Delaunay2D_1.Tolerance = TOLERANCE_OF_DELAUNAY2D
+Show()
+Render()
+
+#filter "Clip"
+ClipFilter_1 = Clip()
+ClipFilter_1.ClipType = "Box"
+ClipFilter_1.ClipType.Scale = [ 0.414, 0.414, 2.0 ]
+Render()
+

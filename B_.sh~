@@ -1,0 +1,97 @@
+#! /usr/bin/gnuplot -persist
+#векторно поле
+#сечения Tau_zy в сечениях по x
+LeftX = -0.5
+RightX = 0.5
+LeftY = -3.386363
+RightY = 3.386363
+Cross_section_1 = -0.5
+Cross_section_2 = -0.4
+Cross_section_3 = -0.33
+Cross_section_4 = -0.25
+Cross_section_5 = -0.17
+Cross_section_6 = 0.0
+Cross_section_7 = 0.17
+Cross_section_8 = 0.25
+Cross_section_9 = 0.33
+Cross_section_10 = 0.4
+Cross_section_11 = 0.5
+SectionDX = 0.01
+SectionDY = 0.00
+
+
+set term png enhanced size 2000,800
+set output "B_.Tau_zy A при x=-0.5.png"
+set xlabel "XX" font "Helvetica,18"
+set bmargin 4
+set ylabel "YY" font "Helvetica,18"
+set xrange [Cross_section_1:Cross_section_1+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy B при x=-0.4.png"
+set xrange [Cross_section_2:Cross_section_2+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy C при x=-0.33.png"
+set xrange [Cross_section_3:Cross_section_3+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy D при x=-0.25.png"
+set xrange [Cross_section_4:Cross_section_4+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy E при x=-0.17.png"
+set xrange [Cross_section_5:Cross_section_5+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy F при x=0.0.png"
+set xrange [Cross_section_6:Cross_section_6+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy G при x=0.17.png"
+set xrange [Cross_section_7:Cross_section_7+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy H при x=0.25.png"
+set xrange [Cross_section_8:Cross_section_8+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy I при x=0.33.png"
+set xrange [Cross_section_9:Cross_section_9+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy J при x=0.4.png"
+set xrange [Cross_section_10:Cross_section_10+SectionDX]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+set output "B_.Tau_zy K при x=0.5.png"
+set xrange [Cross_section_11-SectionDX:Cross_section_11]
+set yrange [LeftY:RightY]
+set view 90,90
+splot '/home/rst/deal.II/rjkz_2/Ftau.gpl' using 1:2:4
+#==============================================================
+
+
+
+
+

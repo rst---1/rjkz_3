@@ -1,0 +1,51 @@
+Slice_x=-0.491
+Slice_x=-0.333
+Slice_x=-0.25
+Slice_x=-0.166
+Slice_x=0.0
+Slice_y=0.0
+Slice_y=0.166
+Slice_y=0.25
+Slice_y=0.333
+Slice_y=0.491
+
+#4_tau_zx_x.py
+FileName0 = "BoxGrid tau_zx x(" + str(Files[i_Files]) + ").gpl"
+FileName1 = DIRECTORY + "/" + "CurveGrid tau_zx x(" + str(Files[i_Files]) + ").gpl"
+FileNameOut = DIRECTORY + "/" + "Precision tau_zx x(" + str(Files[i_Files]) + ").gpl"
+
+#4_tau_zx_y.py
+FileName0 = DIRECTORY + "/" + "BoxGrid tau_zx y(" + str(Files[i_Files]) + ").gpl"
+FileName1 = DIRECTORY + "/" + "CurveGrid tau_zx y(" + str(Files[i_Files]) + ").gpl"
+FileNameOut = DIRECTORY + "/" + "Precision tau_zx y(" + str(Files[i_Files]) + ").gpl"
+
+#4_tau_zy_x.py
+FileName0 = DIRECTORY + "/" + "BoxGrid tau_zy x(" + str(Files[i_Files]) + ").gpl"
+FileName1 = DIRECTORY + "/" + "CurveGrid tau_zy x(" + str(Files[i_Files]) + ").gpl"
+FileNameOut = DIRECTORY + "/" + "Precision tau_zy x(" + str(Files[i_Files]) + ").gpl"
+
+#4_tau_zy_y.py
+FileName0 = DIRECTORY + "/" + "BoxGrid tau_zy y(" + str(Files[i_Files]) + ").gpl"
+FileName1 = DIRECTORY + "/" + "CurveGrid tau_zy y(" + str(Files[i_Files]) + ").gpl"
+FileNameOut = DIRECTORY + "/" + "Precision tau_zy y(" + str(Files[i_Files]) + ").gpl"
+
+#9_U_z_x.py
+FileName0 = DIRECTORY + "/" + "BoxGrid_U_z x(" + str(Files[i_Files]) + ").gpl"
+FileName1 = DIRECTORY + "/" + "CurveGrid_U_z x(" + str(Files[i_Files]) + ").gpl"
+FileNameOut = DIRECTORY + "/" + "Precision U_z x(" + str(Files[i_Files]) + ").gpl"
+
+#9_U_z_y.py
+FileName0 = DIRECTORY + "/" + "BoxGrid_U_z y(" + str(Files[i_Files]) + ").gpl"
+FileName1 = DIRECTORY + "/" + "CurveGrid_U_z y(" + str(Files[i_Files]) + ").gpl"
+FileNameOut = DIRECTORY + "/" + "Precision U_z y(" + str(Files[i_Files]) + ").gpl"
+
+#5__.sh
+stringEnd=".gpl__OUT"
+
+
+
+
+
+
+
+

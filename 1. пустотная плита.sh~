@@ -1,0 +1,102 @@
+#!/bin/bash
+#координаты области
+LeftX="-0.5"
+RightX="0.5"
+LeftY="-3.386363"
+RightY="3.386363"
+#SectionDX="0.007"
+#SectionDY="0.011"
+
+#удалить данные на переходах между слоями
+#breakesX1="-0.17187500"
+#breakesX2="0.16406250"
+
+#координаты сечений функций Tau по x
+#stringS1x="-0.50000000"
+stringS1x="-0.48437500"
+stringS2x="-0.33593750"
+stringS3x="-0.25781250"
+stringS4x="-0.16406250"
+stringS5x="0.00000000"
+stringS6x="0.17187500"
+stringS7x="0.25781250"
+stringS8x="0.33593750"
+stringS9x="0.48437500"
+#stringS9x="0.50000000"
+
+#координаты сечений функций Tau по y
+stringS1y="-3.38636300"
+stringS2y="-2.24696716"
+stringS3y="-1.68477555"
+stringS4y="-1.12843345"
+stringS5y="0.00000000"
+stringS6y="1.12843345"
+stringS7y="1.68477555"
+stringS8y="2.24696716"
+stringS9y="3.38636300"
+
+#координаты сечений функций U_z по x
+stringS1U_zx="0"
+stringS2U_zx="0.164062"
+stringS3U_zx="0.25"
+stringS4U_zx="0.335938"
+stringS5U_zx="0.5"
+
+#координаты сечений функций U_z по y
+stringS1U_zy="0"
+stringS2U_zy="0.164062"
+stringS3U_zy="0.25"
+stringS4U_zy="0.335938"
+stringS5U_zy="0.5"
+
+#добавление в файл Ftau.gpl данных об абсолютных и относительных ошибках
+'/home/rst/deal.II/rjkz_2/scripts/add errors in tau.py'
+cp '/home/rst/deal.II/rjkz_2/Ftau.gpl'  '/home/rst/deal.II/rjkz_2/Ftau_old.gpl'
+rm '/home/rst/deal.II/rjkz_2/Ftau.gpl'
+cp '/home/rst/deal.II/rjkz_2/Ftau1.gpl'  '/home/rst/deal.II/rjkz_2/Ftau.gpl'
+rm '/home/rst/deal.II/rjkz_2/Ftau1.gpl'
+#удаление строк на переломах слоёв
+#'/home/rst/deal.II/rjkz_2/scripts/delete_breakes_Ftau.py' "$breakesX1" "$breakesX2"
+#-------------------------------------------------------------------------
+#удаление первых строк из файла U_z.gpl
+'/home/rst/deal.II/rjkz_2/scripts/1U_z.upgrade.py'
+#-------------------------------------------------------------------------
+#создание графиков
+cd /home/rst/deal.II/rjkz_2/scripts
+./a.sh	$LeftX $RightX $LeftY $RightY	#создание графика общего вида функии Tau_zx
+									#(численное и аналитическое решение)
+									#создание графиков сечения функции Tau_zx
+									#(на одном графике отображеночисленное и 
+									#аналитическое решение на сечении)
+./b.sh	$LeftX $RightX $LeftY $RightY	#создание графика общего вида функии Tau_zy
+									#(численное и аналитическое решение)
+./c.sh	$LeftX $RightX $LeftY $RightY	#создание графика векторного поля и функции U_z
+#-------------------------------------------------------------------------
+#создание графика, содержащего сечения функции Tau_zx на разных координатах x
+'/home/rst/deal.II/rjkz_2/scripts/Tau_zx x=...py' "$stringS1x" "$stringS2x" "$stringS3x" "$stringS4x" "$stringS5x" "$stringS6x" "$stringS7x" "$stringS8x" "$stringS9x"
+'/home/rst/deal.II/rjkz_2/scripts/Tau_zx x=...sh' "$stringS5x" "$stringS6x" "$stringS7x" "$stringS8x" "$stringS9x"
+'/home/rst/deal.II/rjkz_2/scripts/Tau_zx x=.sh' "$stringS1x" "$stringS2x" "$stringS3x" "$stringS4x" "$stringS5x" "$stringS6x" "$stringS7x" "$stringS8x" "$stringS9x"
+#-------------------------------------------------------------------------
+#создание графика, содержащего сечения функции Tau_zx на разных координатах y
+#'/home/rst/deal.II/rjkz_2/scripts/Tau_zx y=...py' "$stringS1y" "$stringS2y" "$stringS3y" "$stringS4y" "$stringS5y" "$stringS6y" "$stringS7y" "$stringS8y" "$stringS9y"
+#'/home/rst/deal.II/rjkz_2/scripts/Tau_zx y=...sh' "$stringS5y" "$stringS6y" "$stringS7y" "$stringS8y" "$stringS9y"
+#'/home/rst/deal.II/rjkz_2/scripts/Tau_zx y=.sh' "$stringS1y" "$stringS2y" "$stringS3y" "$stringS4y" "$stringS5y" "$stringS6y" "$stringS7y" "$stringS8y" "$stringS9y"
+#-------------------------------------------------------------------------
+#создание графика, содержащего сечения функции Tau_zy на разных координатах x
+#'/home/rst/deal.II/rjkz_2/scripts/Tau_zy x=...py' "$stringS1x" "$stringS2x" "$stringS3x" "$stringS4x" "$stringS5x" "$stringS6x" "$stringS7x" "$stringS8x" "$stringS9x"
+#'/home/rst/deal.II/rjkz_2/scripts/Tau_zy x=...sh' "$stringS5x" "$stringS6x" "$stringS7x" "$stringS8x" "$stringS9x"
+#'/home/rst/deal.II/rjkz_2/scripts/Tau_zy x=.sh' "$stringS1x" "$stringS2x" "$stringS3x" "$stringS4x" "$stringS5x" "$stringS6x" "$stringS7x" "$stringS8x" "$stringS9x"
+#-------------------------------------------------------------------------
+#создание графика, содержащего сечения функции Tau_zy на разных координатах y
+#'/home/rst/deal.II/rjkz_2/scripts/Tau_zy y=...py' "$stringS1y" "$stringS2y" "$stringS3y" "$stringS4y" "$stringS5y" "$stringS6y" "$stringS7y" "$stringS8y" "$stringS9y"
+#'/home/rst/deal.II/rjkz_2/scripts/Tau_zy y=...sh' "$stringS5y" "$stringS6y" "$stringS7y" "$stringS8y" "$stringS9y"
+#'/home/rst/deal.II/rjkz_2/scripts/Tau_zy y=.sh' "$stringS1y" "$stringS2y" "$stringS3y" "$stringS4y" "$stringS5y" "$stringS6y" "$stringS7y" "$stringS8y" "$stringS9y"
+#-------------------------------------------------------------------------
+#создание графика, содержащего сечения функции U_z на разных координатах x
+#'/home/rst/deal.II/rjkz_2/scripts/U_z x=...py' "$stringS1U_zx" "$stringS2U_zx" "$stringS3U_zx" "$stringS4U_zx" "$stringS5U_zx"
+#'/home/rst/deal.II/rjkz_2/scripts/U_z x=...sh' "$stringS1U_zx" "$stringS2U_zx" "$stringS3U_zx" "$stringS4U_zx" "$stringS5U_zx"
+#-------------------------------------------------------------------------
+#создание графика, содержащего сечения функции U_z на разных координатах y
+#'/home/rst/deal.II/rjkz_2/scripts/U_z y=...py' "$stringS1U_zy" "$stringS2U_zy" "$stringS3U_zy" "$stringS4U_zy" "$stringS5U_zy"
+#'/home/rst/deal.II/rjkz_2/scripts/U_z y=...sh' "$stringS1U_zy" "$stringS2U_zy" "$stringS3U_zy" "$stringS4U_zy" "$stringS5U_zy"
+#-------------------------------------------------------------------------

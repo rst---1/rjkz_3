@@ -1,0 +1,1770 @@
+        Number of active cells:       295605
+
+#include <deal.II/base/quadrature_lib.h>
+#include <deal.II/base/function.h>
+#include <deal.II/base/logstream.h>
+#include <deal.II/lac/vector.h>
+#include <deal.II/lac/full_matrix.h>
+#include <deal.II/lac/sparse_matrix.h>
+#include <deal.II/lac/compressed_sparsity_pattern.h>
+#include <deal.II/lac/solver_cg.h>
+#include <deal.II/lac/precondition.h>
+#include <deal.II/grid/tria.h>
+#include <deal.II/dofs/dof_handler.h>
+#include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/tria_accessor.h>
+#include <deal.II/grid/tria_iterator.h>
+#include <deal.II/grid/tria_boundary_lib.h>
+#include <deal.II/dofs/dof_tools.h>
+#include <deal.II/dofs/dof_accessor.h>
+#include <deal.II/fe/fe_values.h>
+#include <deal.II/numerics/vector_tools.h>
+#include <deal.II/numerics/matrix_tools.h>
+#include <deal.II/numerics/data_out.h>
+#include <array>
+#include <fstream>
+#include <iostream>
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/grid/grid_out.h>
+#include <deal.II/lac/constraint_matrix.h>
+#include <deal.II/grid/grid_refinement.h>
+#include <deal.II/grid/grid_reordering.h>
+#include <deal.II/numerics/error_estimator.h>
+
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include <CGAL/Delaunay_mesher_2.h>
+#include <CGAL/Delaunay_mesh_face_base_2.h>
+#include <CGAL/Delaunay_mesh_size_criteria_2.h>
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Triangulation_vertex_base_2<K> Vb;
+typedef CGAL::Delaunay_mesh_face_base_2<K> Fb;
+typedef CGAL::Triangulation_data_structure_2<Vb, Fb> Tds;
+typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds> CDT;
+typedef CGAL::Delaunay_mesh_size_criteria_2<CDT> Criteria;
+
+typedef CDT::Vertex_handle Vertex_handle;
+typedef CDT::Point CDTPoint;
+
+using namespace dealii;
+
+int NumberOfProblem=2;															//1-трёхслойная плита 1 к 10
+																				//2-трёхслойная плита 1 к 5
+																				//3-трёхслойная балка 1 к 1
+																				//4-однослойная балка 1 к 1
+																				//5-однослойная плита 1 к 5
+																				//6-однослойная плита 1 к 10
+
+double	E_z1 = 10.0,															//модуль Юнга
+		E_z2 = 1.0,
+		E_z3 = 10.0,
+		nui = 0.25,																//коэффициент Пуассона
+		integral = 0.0;															//для расчёта интеграла по поверхности функции U_z (постоянная C)
+int N = 7;																		//количество рефайнов
+
+template <int dim>
+class Mu_zx : public Function<dim>
+{
+  public:
+    Mu_zx () : Function<dim>() {}
+
+    virtual double value (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+};
+template <int dim>
+double Mu_zx<dim>::value (const Point<dim> &p,
+                                  const unsigned int /*component*/) const		//задание анизотропного коэффициента Mu_zx
+{
+  switch( NumberOfProblem ) {
+   case 1:
+       if(p(0)<=-0.5/3)	{return E_z1/(2.0*(1.0+nui));}
+			else	if(p(0)<=0.5/3)	{return E_z2/(2.0*(1.0+nui));}
+			else	{return E_z3/(2.0*(1.0+nui));}
+       break;
+   case 2:
+       if(p(0)<=-0.5/3)	{return E_z1/(2.0*(1.0+nui));}
+			else	if(p(0)<=0.5/3)	{return E_z2/(2.0*(1.0+nui));}
+			else	{return E_z3/(2.0*(1.0+nui));}
+       break;
+   case 3:
+       if(p(0)<=-0.5/3)	{return E_z1/(2.0*(1.0+nui));}
+			else	if(p(0)<=0.5/3)	{return E_z2/(2.0*(1.0+nui));}
+			else	{return E_z3/(2.0*(1.0+nui));}
+       break;
+   case 4:
+       return E_z2/(2.0*(1.0+nui));
+       break;
+   case 5:
+       return E_z2/(2.0*(1.0+nui));
+       break;
+   case 6:
+       return E_z2/(2.0*(1.0+nui));
+       break;} 
+}
+//------------------------------------------------------------------------------
+template <int dim>
+class Mu_zy : public Function<dim>
+{
+  public:
+    Mu_zy () : Function<dim>() {}
+
+    virtual double value (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+};
+template <int dim>
+double Mu_zy<dim>::value (const Point<dim> &p,
+                                  const unsigned int /*component*/) const		//задание анизотропного коэффициента Mu_zy
+{
+  switch( NumberOfProblem ) {
+   case 1:
+       if(p(0)<=-0.5/3)	{return E_z1/(2.0*(1.0+nui));}
+			else	if(p(0)<=0.5/3)	{return E_z2/(2.0*(1.0+nui));}
+			else	{return E_z3/(2.0*(1.0+nui));}
+       break;
+   case 2:
+       if(p(0)<=-0.5/3)	{return E_z1/(2.0*(1.0+nui));}
+			else	if(p(0)<=0.5/3)	{return E_z2/(2.0*(1.0+nui));}
+			else	{return E_z3/(2.0*(1.0+nui));}
+       break;
+   case 3:
+       if(p(0)<=-0.5/3)	{return E_z1/(2.0*(1.0+nui));}
+			else	if(p(0)<=0.5/3)	{return E_z2/(2.0*(1.0+nui));}
+			else	{return E_z3/(2.0*(1.0+nui));}
+       break;
+   case 4:
+       return E_z2/(2.0*(1.0+nui));
+       break;
+   case 5:
+       return E_z2/(2.0*(1.0+nui));
+       break;
+   case 6:
+       return E_z2/(2.0*(1.0+nui));
+       break;}
+}
+
+
+const Mu_zx<2> mu_zx;                                                           //объявление объектов
+const Mu_zy<2> mu_zy;
+
+
+//------------------------------------------------------------------------------
+template <int dim>
+class Tau_zz : public Function<dim>
+{
+  public:
+    Tau_zz () : Function<dim>() {}
+
+    virtual double value (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+};
+template <int dim>
+double Tau_zz<dim>::value (const Point<dim> &p,
+                                  const unsigned int /*component*/) const
+{                                                                               //задание функции Mu_zz
+  switch( NumberOfProblem ) {
+   case 1:
+       if(p(0)<=-0.5/3) {return -E_z1*p(0);}
+			else if(p(0)<=0.5/3) {return -E_z2*p(0);}
+			else {return -E_z3*p(0);}
+       break;
+   case 2:
+       if(p(0)<=-0.5/3) {return -E_z1*p(0);}
+			else if(p(0)<=0.5/3) {return -E_z2*p(0);}
+			else {return -E_z3*p(0);}
+       break;
+   case 3:
+       if(p(0)<=-0.5/3) {return -E_z1*p(0);}
+			else if(p(0)<=0.5/3) {return -E_z2*p(0);}
+			else {return -E_z3*p(0);}
+       break;
+   case 4:
+       return -E_z2*p(0);
+       break;
+   case 5:
+       return -E_z2*p(0);
+       break;
+   case 6:
+       return -E_z2*p(0);
+       break;}
+}
+//------------------------------------------------------------------------------
+template <int dim>
+class U_x : public Function<dim>
+{
+  public:
+    U_x () : Function<dim>() {}
+
+    virtual double value (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+    virtual double mygradient (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+};
+template <int dim>
+double U_x<dim>::value (const Point<dim> &p,
+                                  const unsigned int /*component*/) const
+{                                                                               //задание функции U_x
+	return (   nui/2 * ( p(0)*p(0) - 1/12 )   );
+}
+template <int dim>
+double U_x<dim>::mygradient (const Point<dim> &p,
+                                  const unsigned int /*component*/) const
+{                                                                               //задание производной функции U_x
+    return 0;						//тест2
+}
+//------------------------------------------------------------------------------
+template <int dim>
+class U_y : public Function<dim>
+{
+  public:
+    U_y () : Function<dim>() {}
+
+    virtual double value (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+    virtual double mygradient (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+};
+template <int dim>
+double U_y<dim>::value (const Point<dim> &p,
+                                  const unsigned int /*component*/) const
+{                                                                               //задание функции U_y
+//	return 0;
+	return nui*p(0)*p(1);
+}
+template <int dim>
+double U_y<dim>::mygradient (const Point<dim> &p,
+                                  const unsigned int /*component*/) const
+{                                                                               //задание производной функции U_y
+	return 0;
+}
+//------------------------------------------------------------------------------
+template <int dim>
+class FunctionAnalisys : public Function<dim>
+{
+  public:
+    FunctionAnalisys () : Function<dim>() {}
+
+    virtual double value (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+	virtual double mygradientX (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+	virtual double mygradientY (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+};
+template <int dim>
+double FunctionAnalisys<dim>::value (const Point<dim> &p,
+                                  const unsigned int /*component*/) const
+{
+	double h=0.5/3;
+	double C_1 = 0.51;
+	double U_z1_original, U_z1_slagaemoe, U_z2_original, U_z2_slagaemoe, U_z3;
+	
+  switch( NumberOfProblem ) {
+   case 1:
+			U_z1_original = -1.0/12 - nui/12 - p(0)/4 - 5.0*nui*p(0)/24 + p(0)*p(0)*p(0)/3 + nui*p(0)*p(0)*p(0)/6;
+			U_z1_slagaemoe = -1.0/12 - h/4 + h*h*h/3 - nui/12 - 5.0*h*nui/24 + nui*h*h*h/6;
+			U_z2_original = -E_z1*h/4/E_z2 - 2.0*h*h*h/3 + E_z1*h*h*h/E_z2 + h*nui/24 - E_z1*h*nui/4/E_z2
+					- 5.0*h*h*h*nui/6 + E_z1*h*h*h*nui/E_z2 - E_z1*p(0)/4/E_z2 - h*h*p(0) + E_z1*h*h*p(0)/E_z2
+					+ nui*p(0)/24 - E_z1*nui*p(0)/4/E_z2 - h*h*nui*p(0) + E_z1*h*h*nui*p(0) + p(0)*p(0)*p(0)/3
+					+ nui*p(0)*p(0)*p(0)/6;
+			U_z2_slagaemoe = -E_z1*h/2/E_z2 - 4.0*h*h*h/3 + 2.0*E_z1*h*h*h/E_z2 + h*nui/12 - E_z1*h*nui/2/E_z2
+					- 5.0*h*h*h*nui/3 + 2.0*E_z1*h*h*h*nui/E_z2;
+			U_z3 = E_z1*h/4/E_z3 + 2.0*h*h*h/3 - E_z1*h*h*h/E_z3 - h*nui/24 - E_z1*h*nui/4/E_z3
+					+ 5.0*h*h*h*nui/6 - E_z1*h*h*h*nui/E_z2 - E_z1*p(0)/4/E_z3 - h*h*p(0) + E_z1*h*h*p(0)/E_z3
+					+ nui*p(0)/24 - E_z1*nui*p(0)/4/E_z3 - h*h*nui*p(0) + E_z1*h*h*nui*p(0)/E_z3
+					+ p(0)*p(0)*p(0)/3 + p(0)*p(0)*p(0)*nui/6;
+			if(p(0)<=-h) {return U_z1_original + C_1;}
+			else if(p(0)<h) {return U_z1_slagaemoe + U_z2_original + C_1;}
+			else {return U_z1_slagaemoe + U_z2_slagaemoe + U_z3 + C_1;}
+       break;
+   case 2:
+			U_z1_original = -1.0/12 - nui/12 - p(0)/4 - 5.0*nui*p(0)/24 + p(0)*p(0)*p(0)/3 + nui*p(0)*p(0)*p(0)/6;
+			U_z1_slagaemoe = -1.0/12 - h/4 + h*h*h/3 - nui/12 - 5.0*h*nui/24 + nui*h*h*h/6;
+			U_z2_original = -E_z1*h/4/E_z2 - 2.0*h*h*h/3 + E_z1*h*h*h/E_z2 + h*nui/24 - E_z1*h*nui/4/E_z2
+					- 5.0*h*h*h*nui/6 + E_z1*h*h*h*nui/E_z2 - E_z1*p(0)/4/E_z2 - h*h*p(0) + E_z1*h*h*p(0)/E_z2
+					+ nui*p(0)/24 - E_z1*nui*p(0)/4/E_z2 - h*h*nui*p(0) + E_z1*h*h*nui*p(0) + p(0)*p(0)*p(0)/3
+					+ nui*p(0)*p(0)*p(0)/6;
+			U_z2_slagaemoe = -E_z1*h/2/E_z2 - 4.0*h*h*h/3 + 2.0*E_z1*h*h*h/E_z2 + h*nui/12 - E_z1*h*nui/2/E_z2
+					- 5.0*h*h*h*nui/3 + 2.0*E_z1*h*h*h*nui/E_z2;
+			U_z3 = E_z1*h/4/E_z3 + 2.0*h*h*h/3 - E_z1*h*h*h/E_z3 - h*nui/24 - E_z1*h*nui/4/E_z3
+					+ 5.0*h*h*h*nui/6 - E_z1*h*h*h*nui/E_z2 - E_z1*p(0)/4/E_z3 - h*h*p(0) + E_z1*h*h*p(0)/E_z3
+					+ nui*p(0)/24 - E_z1*nui*p(0)/4/E_z3 - h*h*nui*p(0) + E_z1*h*h*nui*p(0)/E_z3
+					+ p(0)*p(0)*p(0)/3 + p(0)*p(0)*p(0)*nui/6;
+			if(p(0)<=-h) {return U_z1_original + C_1;}
+			else if(p(0)<h) {return U_z1_slagaemoe + U_z2_original + C_1;}
+			else {return U_z1_slagaemoe + U_z2_slagaemoe + U_z3 + C_1;}
+       break;
+   case 3:
+			U_z1_original = -1.0/12 - nui/12 - p(0)/4 - 5.0*nui*p(0)/24 + p(0)*p(0)*p(0)/3 + nui*p(0)*p(0)*p(0)/6;
+			U_z1_slagaemoe = -1.0/12 - h/4 + h*h*h/3 - nui/12 - 5.0*h*nui/24 + nui*h*h*h/6;
+			U_z2_original = -E_z1*h/4/E_z2 - 2.0*h*h*h/3 + E_z1*h*h*h/E_z2 + h*nui/24 - E_z1*h*nui/4/E_z2
+					- 5.0*h*h*h*nui/6 + E_z1*h*h*h*nui/E_z2 - E_z1*p(0)/4/E_z2 - h*h*p(0) + E_z1*h*h*p(0)/E_z2
+					+ nui*p(0)/24 - E_z1*nui*p(0)/4/E_z2 - h*h*nui*p(0) + E_z1*h*h*nui*p(0) + p(0)*p(0)*p(0)/3
+					+ nui*p(0)*p(0)*p(0)/6;
+			U_z2_slagaemoe = -E_z1*h/2/E_z2 - 4.0*h*h*h/3 + 2.0*E_z1*h*h*h/E_z2 + h*nui/12 - E_z1*h*nui/2/E_z2
+					- 5.0*h*h*h*nui/3 + 2.0*E_z1*h*h*h*nui/E_z2;
+			U_z3 = E_z1*h/4/E_z3 + 2.0*h*h*h/3 - E_z1*h*h*h/E_z3 - h*nui/24 - E_z1*h*nui/4/E_z3
+					+ 5.0*h*h*h*nui/6 - E_z1*h*h*h*nui/E_z2 - E_z1*p(0)/4/E_z3 - h*h*p(0) + E_z1*h*h*p(0)/E_z3
+					+ nui*p(0)/24 - E_z1*nui*p(0)/4/E_z3 - h*h*nui*p(0) + E_z1*h*h*nui*p(0)/E_z3
+					+ p(0)*p(0)*p(0)/3 + p(0)*p(0)*p(0)*nui/6;
+			if(p(0)<=-h) {return U_z1_original + C_1;}
+			else if(p(0)<h) {return U_z1_slagaemoe + U_z2_original + C_1;}
+			else {return U_z1_slagaemoe + U_z2_slagaemoe + U_z3 + C_1;}
+       break;
+   case 4:
+       return ((2.0 + nui)*p(0)*p(0)*p(0)/6 - (0.25 + 5.0/24.0*nui)*p(0) + nui/24 );
+       break;
+   case 5:
+       return ((2.0 + nui)*p(0)*p(0)*p(0)/6 - (0.25 + 5.0/24.0*nui)*p(0) + nui/24 );
+       break;
+   case 6:
+       return ((2.0 + nui)*p(0)*p(0)*p(0)/6 - (0.25 + 5.0/24.0*nui)*p(0) + nui/24 );
+       break;}
+}
+template <int dim>
+double FunctionAnalisys<dim>::mygradientX (const Point<dim> &p,
+                                  const unsigned int /*component*/) const
+{
+	double h=0.5/3;
+	double U_z1_original, U_z1_slagaemoe, U_z2_original, U_z2_slagaemoe, U_z3;
+	U_z1_original = -0.25 - 5.0*nui/24 + p(0)*p(0) + nui*p(0)*p(0)/2;
+	U_z1_slagaemoe = 0;
+	U_z2_original = - E_z1/4/E_z2 - h*h + E_z1*h*h/E_z2
+			+ nui/24 - E_z1*nui/4/E_z2 - h*h*nui + E_z1*h*h*nui + p(0)*p(0)
+			+ nui*p(0)*p(0)/2;
+	U_z2_slagaemoe = 0;
+	U_z3 =  - E_z1/4/E_z3 - h*h + E_z1*h*h/E_z3
+			+ nui/24 - E_z1*nui/4/E_z3 - h*h*nui + E_z1*h*h*nui/E_z3
+			+ p(0)*p(0) + p(0)*p(0)*nui/2;
+	if(p(0)<=-h) {return U_z1_original;}
+	else if(p(0)<h) {return U_z1_slagaemoe + U_z2_original;}
+	else {return U_z1_slagaemoe + U_z2_slagaemoe + U_z3;}
+}
+template <int dim>
+double FunctionAnalisys<dim>::mygradientY (const Point<dim> &p,
+                                  const unsigned int /*component*/) const
+{
+//	double Pi=3.14159265358979;
+//	double YY=0, buffer0=0, buffer0x3=0, buffer1=0, buffer2=0, U_z=0;
+//	for (int j=1; j<30; j++)
+//	{
+//		buffer0 = Pi*(2*j-1);
+//		buffer0x3 = buffer0*buffer0*buffer0;
+//		buffer1 = 0.5*(exp(buffer0*0.5)-exp(-buffer0*0.5));
+//		buffer2 = 0.5*(exp(buffer0*p(1))-exp(-buffer0*p(1)));
+//		YY=nui*4.0/buffer0x3/buffer1*buffer2*buffer0;
+//		U_z += YY*cos(buffer0*p(0));
+//	}
+//	U_z -= nui*(-p(1)*(p(0)-c_0));
+//	return U_z;
+	return 0;
+}
+//------------------------------------------------------------------------------
+						                                                           //объявление объектов
+const Tau_zz<2> tau_zz;
+const U_x<2>     u_x;
+const U_y<2>     u_y;
+const FunctionAnalisys<2> functionAnalisys;
+
+
+
+
+  template <int dim>
+  class SolutionBase
+  {
+    protected:
+      static const unsigned int n_source_centers = 3;
+      static const Point<dim>   source_centers[n_source_centers];
+      static const double       width;
+  };
+  template <int dim>
+  class Solution : public Function<dim>,
+                   protected SolutionBase<dim>
+  {
+    public:
+      Solution () : Function<dim>() {}
+      virtual double value (const Point<dim>   &p,
+                            const unsigned int  component = 0) const;
+      virtual Tensor<1,dim> gradient (const Point<dim>   &p,
+                                      const unsigned int  component = 0) const;
+  };
+  template <int dim>
+  double Solution<dim>::value (const Point<dim>   &p, const unsigned int) const
+  {                                                                             //г.у. 1-го рода
+      return 0;
+//	  return ((2 + nui)*p(0)*p(0)*p(0)/6 - (0.25 + 5/24*nui)*p(0) + nui/24);
+  }
+  template <int dim>
+  Tensor<1,dim> Solution<dim>::gradient (const Point<dim> &p, const unsigned int) const
+  {																				//г.у. 2-го рода
+//      Tensor<1,dim> return_value;
+
+//      return_value[0] = 0.5*E_z*(p(0)*p(0)-0.25);
+//      return_value[1] = 0;
+//      return return_value;
+
+	  return 0;
+  }
+
+template<uint8_t dim>
+dealii::Point<dim, double> get_grad (
+        const typename dealii::DoFHandler<dim>::active_cell_iterator &cell,
+        const dealii::Vector<double> &solution,
+        uint8_t index_vertex)
+{
+    dealii::Point<dim, double> grad;
+
+    double x1 = cell->vertex(0)(0);
+    double x2 = cell->vertex(1)(0);
+    double x3 = cell->vertex(2)(0);
+    double x4 = cell->vertex(3)(0);
+
+    double y1 = cell->vertex(0)(1);
+    double y2 = cell->vertex(1)(1);
+    double y3 = cell->vertex(2)(1);
+    double y4 = cell->vertex(3)(1);
+
+    double f1 = solution(cell->vertex_dof_index (0, 0));
+    double f2 = solution(cell->vertex_dof_index (1, 0));
+    double f3 = solution(cell->vertex_dof_index (2, 0));
+    double f4 = solution(cell->vertex_dof_index (3, 0));
+	
+	double y_1 = ( ( y3 - y2 ) / ( x3 - x2 ) ) * ( x1 - x2 ) + y2;
+	double y_2 = ( ( y1 - y4 ) / ( x1 - x4 ) ) * ( x2 - x4 ) + y4;
+	double y_3 = ( ( y1 - y4 ) / ( x1 - x4 ) ) * ( x3 - x4 ) + y4;
+	double y_4 = ( ( y3 - y2 ) / ( x3 - x2 ) ) * ( x4 - x2 ) + y2;
+	
+	double x__1 = ( y1 - y3 ) * ( ( x4 - x3 ) / ( y4 - y3 ) ) + x3;
+	double x__2 = ( y2 - y3 ) * ( ( x4 - x3 ) / ( y4 - y3 ) ) + x3;
+	double x__3 = ( y3 - y1 ) * ( ( x2 - x1 ) / ( y2 - y1 ) ) + x1;
+	double x__4 = ( y4 - y1 ) * ( ( x2 - x1 ) / ( y2 - y1 ) ) + x1;
+	
+	double f_1 = ( y_1 - y2 ) * ( ( f3 - f2 ) / ( y3 - y2 ) ) + f2;
+	double f_2 = ( y_2 - y4 ) * ( ( f1 - f4 ) / ( y1 - y4 ) ) + f4;
+	double f_3 = ( y_3 - y4 ) * ( ( f1 - f4 ) / ( y1 - y4 ) ) + f4;
+	double f_4 = ( y_4 - y2 ) * ( ( f3 - f2 ) / ( y3 - y2 ) ) + f2;
+	
+	double f__1 = ( ( f4 - f3 ) / ( x4 - x3 ) ) * ( x__1 - x3 ) + f3;
+	double f__2 = ( ( f4 - f3 ) / ( x4 - x3 ) ) * ( x__2 - x3 ) + f3;
+	double f__3 = ( ( f2 - f1 ) / ( x2 - x1 ) ) * ( x__3 - x1 ) + f1;
+	double f__4 = ( ( f2 - f1 ) / ( x2 - x1 ) ) * ( x__4 - x1 ) + f1;
+	
+	switch(index_vertex)														
+		{
+		  case 0 : grad(0) = ( f1 - f__1 ) / ( x1 - x__1 ); break;
+		  case 1 : grad(0) = ( f2 - f__2 ) / ( x2 - x__2 ); break;
+		  case 2 : grad(0) = ( f3 - f__3 ) / ( x3 - x__3 ); break;
+		  case 3 : grad(0) = ( f4 - f__4 ) / ( x4 - x__4 ); break;
+		}
+	switch(index_vertex)														
+		{
+		  case 0 : grad(1) = ( f1 - f_1 ) / ( y1 - y_1 ); break;
+		  case 1 : grad(1) = ( f2 - f_2 ) / ( y2 - y_2 ); break;
+		  case 2 : grad(1) = ( f3 - f_3 ) / ( y3 - y_3 ); break;
+		  case 3 : grad(1) = ( f4 - f_4 ) / ( y4 - y_4 ); break;
+		}
+	
+	return grad;
+}
+
+void set_grid(dealii::Triangulation< 2 > &triangulation)
+{
+    std::vector<dealii::Point<2> > v;
+    std::vector<dealii::CellData<2> > c;
+
+    CDT cdt;
+    std::vector<Vertex_handle> vec_of_vertices;
+    std::vector<std::vector<Vertex_handle> > vec_of_domains;
+
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, -2.5) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, -2.5) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, 2.5) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, 2.5) ));
+    vec_of_domains.push_back(vec_of_vertices);
+    vec_of_vertices.clear();
+	
+	vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.166, -2.5) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.166, -2.5) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.166, -1.66) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.166, -1.66) ));
+    vec_of_domains.push_back(vec_of_vertices);
+    vec_of_vertices.clear();
+	
+	vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.166, 1.66) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.166, 1.66) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.166, 2.5) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.166, 2.5) ));
+    vec_of_domains.push_back(vec_of_vertices);
+    vec_of_vertices.clear();
+	
+//	vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, -2.5) ));
+//    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, -2.5) ));
+//    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, -1.66) ));
+//    vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, -1.66) ));
+//    vec_of_domains.push_back(vec_of_vertices);
+//    vec_of_vertices.clear();
+//	
+//	vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, -1.66) ));
+//    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, -1.66) ));
+//    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, 1.66) ));
+//    vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, 1.66) ));
+//    vec_of_domains.push_back(vec_of_vertices);
+//    vec_of_vertices.clear();
+//
+//	vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, 1.66) ));
+//    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, 1.66) ));
+//    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, 2.5) ));
+//    vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, 2.5) ));
+//    vec_of_domains.push_back(vec_of_vertices);
+//    vec_of_vertices.clear();
+	
+//============================================================================== Отверстия в балке
+	
+//	double  radius = 0.363636757;
+//	double  x_coordinate_of_center = 0.0;
+//	double  y_coordinate_of_center = 0.0;
+//	double  number_of_dots_in_circle = 12;										//количество сторон в многоугольнике для отверстия
+//	double  number_of_dots_in_armatura = 10;										//количество сторон в многоугольнике для арматуры
+//	double	step_of_phi = 2.0 * 3.14 / number_of_dots_in_circle;
+	
+//============================================================================== Арматура в балке
+//	
+//	radius = 0.05;
+//	x_coordinate_of_center = 0.3636;
+//	y_coordinate_of_center = 0.42045;
+//	step_of_phi = 2.0 * 3.14 / number_of_dots_in_armatura;
+//			std::cout << "step_of_phi = " << step_of_phi << "\n";
+//	for(double current_phi = 0, i=0, x=0.0, y=0.0; current_phi < (2.0 * 3.14); current_phi += step_of_phi)
+//	{	
+//		x = x_coordinate_of_center + radius * cos(current_phi);
+//		x = 100*x; x=round(x); x /= 100;
+//		y = y_coordinate_of_center + radius * sin(current_phi);
+//		y = 100*y; y=round(y); y /= 100;
+//		
+//		vec_of_vertices.push_back( cdt.insert( CDTPoint(  x, y ) ) );
+//	}
+//	vec_of_domains.push_back(vec_of_vertices);
+//	vec_of_vertices.clear();
+	
+	vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, -1.66) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, -1.66) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.5, 1.66) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.5, 1.66) ));
+    vec_of_domains.push_back(vec_of_vertices);
+    vec_of_vertices.clear();
+	
+	vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.166, -1.66) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.166, -1.66) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(0.166, 1.66) ));
+    vec_of_vertices.push_back(cdt.insert(CDTPoint(-0.166, 1.66) ));
+    vec_of_domains.push_back(vec_of_vertices);
+    vec_of_vertices.clear();
+	
+//==============================================================================
+  	    
+    for(auto it = vec_of_domains.begin(); it != vec_of_domains.end(); ++it) 
+    {
+       for(auto vit = it->begin() + 1; vit != it->end(); ++vit)
+       {
+          cdt.insert_constraint( *(vit - 1), *vit );
+       }
+       cdt.insert_constraint( *( it->end() - 1), *( it->begin() ) );
+    }
+    
+    std::list<CDTPoint> list_of_seeds;
+    list_of_seeds.push_back(CDTPoint(0.0, 0.0));
+    list_of_seeds.push_back(CDTPoint(-0.3, 0.0));
+    list_of_seeds.push_back(CDTPoint(0.3, 0.0));
+//	
+//    list_of_seeds.push_back(CDTPoint(-0.3636, -0.42045));
+//	list_of_seeds.push_back(CDTPoint(0.3636, -0.42045));
+//	list_of_seeds.push_back(CDTPoint(-0.3636, 0.42045));
+//	list_of_seeds.push_back(CDTPoint(0.3636, 0.42045));
+//	list_of_seeds.push_back(CDTPoint(-0.3636, -1.26136));
+//	list_of_seeds.push_back(CDTPoint(0.3636, -1.26136));
+//	list_of_seeds.push_back(CDTPoint(-0.3636, 1.26136));
+//	list_of_seeds.push_back(CDTPoint(0.3636, 1.26136));
+//	list_of_seeds.push_back(CDTPoint(-0.3636, -2.10227));
+//	list_of_seeds.push_back(CDTPoint(0.3636, -2.10227));
+//	list_of_seeds.push_back(CDTPoint(-0.3636, 2.10227));
+//	list_of_seeds.push_back(CDTPoint(0.3636, 2.10227));
+//	list_of_seeds.push_back(CDTPoint(-0.3636, -2.94318));
+//	list_of_seeds.push_back(CDTPoint(0.3636, -2.94318));
+//	list_of_seeds.push_back(CDTPoint(-0.3636, 2.94318));
+//	list_of_seeds.push_back(CDTPoint(0.3636, 2.94318));
+	
+	std::list<CDTPoint> list_of_inclusion;
+	list_of_inclusion.push_back(CDTPoint(0.0, 0.0));
+    list_of_inclusion.push_back(CDTPoint(-0.3, 0.0));
+    list_of_inclusion.push_back(CDTPoint(0.3, 0.0));
+	
+//==============================================================================
+//===========================разбиение области без отверстий====================
+	
+//    std::cout << "Meshing the domain..." << std::endl;
+  
+	CGAL::refine_Delaunay_mesh_2(cdt, list_of_seeds.begin(), list_of_seeds.end(),		//использовать
+                               Criteria(0.3,0.01));
+	
+//	CGAL::refine_Delaunay_mesh_2(cdt, list_of_seeds.begin(), list_of_seeds.end(),		//для тестов
+//                               Criteria(0.3,0.04));	
+	
+    std::cout << "Number of vertices: " << cdt.number_of_vertices() << std::endl;
+    std::cout << "Number of finite faces: " << cdt.number_of_faces() << std::endl;
+    
+    size_t mesh_faces_counter = 0;
+  
+    for(CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) 
+    {
+        if(fit->is_in_domain()) 
+            ++mesh_faces_counter;
+    }
+    
+    std::cout << "Number of faces in the mesh domain: " << mesh_faces_counter << std::endl;
+	
+    
+    CDT::Triangle trg;
+    
+    size_t mat_id; 
+
+    for(auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit)
+    {
+        if(fit->is_in_domain())
+        { 
+            mat_id = 0;
+      
+        trg = cdt.triangle(fit);
+      
+        size_t t = v.size()*10;
+        size_t indx[7] = {t+0, t+1, t+2, t+3, t+4, t+5, t+6};
+      
+        double middle_segment01_x = 0.5 * (CGAL::to_double(trg[0].x()) + CGAL::to_double(trg[1].x()));
+        double middle_segment01_y = 0.5 * (CGAL::to_double(trg[0].y()) + CGAL::to_double(trg[1].y()));
+      
+        double middle_segment12_x = 0.5 * (CGAL::to_double(trg[1].x()) + CGAL::to_double(trg[2].x()));
+        double middle_segment12_y = 0.5 * (CGAL::to_double(trg[1].y()) + CGAL::to_double(trg[2].y()));
+
+        double middle_segment02_x = 0.5 * (CGAL::to_double(trg[0].x()) + CGAL::to_double(trg[2].x()));
+        double middle_segment02_y = 0.5 * (CGAL::to_double(trg[0].y()) + CGAL::to_double(trg[2].y()));
+      
+        double center_of_mass_x = (CGAL::to_double(trg[0].x()) + CGAL::to_double(trg[1].x()) +
+                                   CGAL::to_double(trg[2].x())) / 3.0;
+        double center_of_mass_y = (CGAL::to_double(trg[0].y()) + CGAL::to_double(trg[1].y()) +
+                                   CGAL::to_double(trg[2].y())) / 3.0;
+        for(int i=0; i<v.size(); ++i)
+        {
+            if (
+                    (fabs(v[i](0) - trg[0].x()) < 1e-10) and
+                    (fabs(v[i](1) - trg[0].y()) < 1e-10))
+                indx[0] = i;
+            if (
+                    (fabs(v[i](0) - trg[1].x()) < 1e-10) and
+                    (fabs(v[i](1) - trg[1].y()) < 1e-10))
+                indx[1] = i;
+            if (
+                    (fabs(v[i](0) - trg[2].x()) < 1e-10) and
+                    (fabs(v[i](1) - trg[2].y()) < 1e-10))
+                indx[2] = i;
+            if (
+                    (fabs(v[i](0) - middle_segment01_x) < 1e-10) and
+                    (fabs(v[i](1) - middle_segment01_y) < 1e-10))
+                indx[3] = i;
+            if (
+                    (fabs(v[i](0) - middle_segment12_x) < 1e-10) and
+                    (fabs(v[i](1) - middle_segment12_y) < 1e-10))
+                indx[4] = i;
+            if (
+                    (fabs(v[i](0) - middle_segment02_x) < 1e-10) and
+                    (fabs(v[i](1) - middle_segment02_y) < 1e-10))
+                indx[5] = i;
+            if (
+                    (fabs(v[i](0) - center_of_mass_x) < 1e-10) and
+                    (fabs(v[i](1) - center_of_mass_y) < 1e-10))
+                indx[6] = i;
+			
+        };
+        if (indx[0] == t)
+        {
+            v.push_back(dealii::Point<2>( CGAL::to_double(trg[0].x()),  CGAL::to_double(trg[0].y()) ) );
+            indx[0] = v.size()-1;
+        }
+        if (indx[1] == t+1)
+        {
+            v.push_back(dealii::Point<2>( CGAL::to_double(trg[1].x()),  CGAL::to_double(trg[1].y()) ) );
+            indx[1] = v.size()-1;
+        }
+        if (indx[2] == t+2)
+        {
+            v.push_back(dealii::Point<2>( CGAL::to_double(trg[2].x()),  CGAL::to_double(trg[2].y()) ) );
+            indx[2] = v.size()-1;
+        }
+        if (indx[3] == t+3)
+        {
+            v.push_back(dealii::Point<2>( middle_segment01_x, middle_segment01_y ));
+            indx[3] = v.size()-1;
+        }
+        if (indx[4] == t+4)
+        {
+            v.push_back(dealii::Point<2>( middle_segment12_x, middle_segment12_y ));
+            indx[4] = v.size()-1;
+        }
+        if (indx[5] == t+5)
+        {
+            v.push_back(dealii::Point<2>( middle_segment02_x, middle_segment02_y ));
+            indx[5] = v.size()-1;
+        }
+        if (indx[6] == t+6)
+        {
+            v.push_back(dealii::Point<2>( center_of_mass_x, center_of_mass_y));
+            indx[6] = v.size()-1;
+        }
+
+        {
+            dealii::CellData<2> temp_c;
+
+            temp_c.vertices[0] = indx[0];
+            temp_c.vertices[1] = indx[3];
+            temp_c.vertices[2] = indx[6];
+            temp_c.vertices[3] = indx[5];
+            temp_c.material_id = mat_id;
+
+            c.push_back(temp_c);
+        }
+
+        {
+            dealii::CellData<2> temp_c;
+
+            temp_c.vertices[0] = indx[1];
+            temp_c.vertices[1] = indx[4];
+            temp_c.vertices[2] = indx[6];
+            temp_c.vertices[3] = indx[3];
+            temp_c.material_id = mat_id;
+
+            c.push_back(temp_c);
+        }
+
+        {
+            dealii::CellData<2> temp_c;
+
+            temp_c.vertices[0] = indx[2];
+            temp_c.vertices[1] = indx[5];
+            temp_c.vertices[2] = indx[6];
+            temp_c.vertices[3] = indx[4];
+            temp_c.material_id = mat_id;
+
+            c.push_back(temp_c);
+        }
+
+    }
+	}
+	
+//==============================================================================
+//===========================разбиение внедрений================================
+	
+//	CGAL::refine_Delaunay_mesh_2(cdt, list_of_inclusion.begin(), list_of_inclusion.end(),	//для тестов
+//                               Criteria(0.3,0.3), true);
+	
+	CGAL::refine_Delaunay_mesh_2(cdt, list_of_inclusion.begin(), list_of_inclusion.end(),
+                               Criteria(0.3,0.05), true);									//использовать
+	
+	
+//	CGAL::refine_Delaunay_mesh_2(cdt, Criteria());
+	for(auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit)
+    {
+        if(fit->is_in_domain())
+        { 
+            mat_id = 1;
+        
+        trg = cdt.triangle(fit);
+      
+        size_t t = v.size()*10;
+        size_t indx[7] = {t+0, t+1, t+2, t+3, t+4, t+5, t+6};
+      
+        double middle_segment01_x = 0.5 * (CGAL::to_double(trg[0].x()) + CGAL::to_double(trg[1].x()));
+        double middle_segment01_y = 0.5 * (CGAL::to_double(trg[0].y()) + CGAL::to_double(trg[1].y()));
+      
+        double middle_segment12_x = 0.5 * (CGAL::to_double(trg[1].x()) + CGAL::to_double(trg[2].x()));
+        double middle_segment12_y = 0.5 * (CGAL::to_double(trg[1].y()) + CGAL::to_double(trg[2].y()));
+
+        double middle_segment02_x = 0.5 * (CGAL::to_double(trg[0].x()) + CGAL::to_double(trg[2].x()));
+        double middle_segment02_y = 0.5 * (CGAL::to_double(trg[0].y()) + CGAL::to_double(trg[2].y()));
+      
+        double center_of_mass_x = (CGAL::to_double(trg[0].x()) + CGAL::to_double(trg[1].x()) +
+                                   CGAL::to_double(trg[2].x())) / 3.0;
+        double center_of_mass_y = (CGAL::to_double(trg[0].y()) + CGAL::to_double(trg[1].y()) +
+                                   CGAL::to_double(trg[2].y())) / 3.0;
+        for(int i=0; i<v.size(); ++i)
+        {
+            if (
+                    (fabs(v[i](0) - trg[0].x()) < 1e-10) and
+                    (fabs(v[i](1) - trg[0].y()) < 1e-10))
+                indx[0] = i;
+            if (
+                    (fabs(v[i](0) - trg[1].x()) < 1e-10) and
+                    (fabs(v[i](1) - trg[1].y()) < 1e-10))
+                indx[1] = i;
+            if (
+                    (fabs(v[i](0) - trg[2].x()) < 1e-10) and
+                    (fabs(v[i](1) - trg[2].y()) < 1e-10))
+                indx[2] = i;
+            if (
+                    (fabs(v[i](0) - middle_segment01_x) < 1e-10) and
+                    (fabs(v[i](1) - middle_segment01_y) < 1e-10))
+                indx[3] = i;
+            if (
+                    (fabs(v[i](0) - middle_segment12_x) < 1e-10) and
+                    (fabs(v[i](1) - middle_segment12_y) < 1e-10))
+                indx[4] = i;
+            if (
+                    (fabs(v[i](0) - middle_segment02_x) < 1e-10) and
+                    (fabs(v[i](1) - middle_segment02_y) < 1e-10))
+                indx[5] = i;
+            if (
+                    (fabs(v[i](0) - center_of_mass_x) < 1e-10) and
+                    (fabs(v[i](1) - center_of_mass_y) < 1e-10))
+                indx[6] = i;
+			
+        };
+        if (indx[0] == t)
+        {
+            v.push_back(dealii::Point<2>( CGAL::to_double(trg[0].x()),  CGAL::to_double(trg[0].y()) ) );
+            indx[0] = v.size()-1;
+        }
+        if (indx[1] == t+1)
+        {
+            v.push_back(dealii::Point<2>( CGAL::to_double(trg[1].x()),  CGAL::to_double(trg[1].y()) ) );
+            indx[1] = v.size()-1;
+        }
+        if (indx[2] == t+2)
+        {
+            v.push_back(dealii::Point<2>( CGAL::to_double(trg[2].x()),  CGAL::to_double(trg[2].y()) ) );
+            indx[2] = v.size()-1;
+        }
+        if (indx[3] == t+3)
+        {
+            v.push_back(dealii::Point<2>( middle_segment01_x, middle_segment01_y ));
+            indx[3] = v.size()-1;
+        }
+        if (indx[4] == t+4)
+        {
+            v.push_back(dealii::Point<2>( middle_segment12_x, middle_segment12_y ));
+            indx[4] = v.size()-1;
+        }
+        if (indx[5] == t+5)
+        {
+            v.push_back(dealii::Point<2>( middle_segment02_x, middle_segment02_y ));
+            indx[5] = v.size()-1;
+        }
+        if (indx[6] == t+6)
+        {
+            v.push_back(dealii::Point<2>( center_of_mass_x, center_of_mass_y));
+            indx[6] = v.size()-1;
+        }
+
+        {
+            dealii::CellData<2> temp_c;
+
+            temp_c.vertices[0] = indx[0];
+            temp_c.vertices[1] = indx[3];
+            temp_c.vertices[2] = indx[6];
+            temp_c.vertices[3] = indx[5];
+            temp_c.material_id = mat_id;
+
+            c.push_back(temp_c);
+        }
+
+        {
+            dealii::CellData<2> temp_c;
+
+            temp_c.vertices[0] = indx[1];
+            temp_c.vertices[1] = indx[4];
+            temp_c.vertices[2] = indx[6];
+            temp_c.vertices[3] = indx[3];
+            temp_c.material_id = mat_id;
+
+            c.push_back(temp_c);
+        }
+
+        {
+            dealii::CellData<2> temp_c;
+
+            temp_c.vertices[0] = indx[2];
+            temp_c.vertices[1] = indx[5];
+            temp_c.vertices[2] = indx[6];
+            temp_c.vertices[3] = indx[4];
+            temp_c.material_id = mat_id;
+
+            c.push_back(temp_c);
+        }
+
+    }
+	}
+	
+//==============================================================================
+	
+//    printf("%d %d\n", v.size(), c.size());
+//    puts("1");
+//    dealii::GridReordering<2>::invert_all_cells_of_negative_grid(v, c);
+    dealii::GridReordering<2>::reorder_cells(c);
+    triangulation .create_triangulation_compatibility (v, c, dealii::SubCellData());
+	
+	std::cout << "Number of faces in the mesh domain: " << mesh_faces_counter << std::endl;
+	
+};
+
+
+template <int dim>
+class Step6
+{
+  public:
+    Step6 ();
+    ~Step6 ();
+
+	void calculate_grad_on_cells ();
+    void run ();
+
+  private:
+    void setup_system ();
+    void assemble_system ();
+    void solve ();
+    void refine_grid ();
+    void output_results () const;
+    Triangulation<dim>   triangulation;
+    DoFHandler<dim>      dof_handler;
+    FE_Q<dim>            fe;
+    ConstraintMatrix     hanging_node_constraints;
+    SparsityPattern      sparsity_pattern;
+    SparseMatrix<double> system_matrix;
+    Vector<double>       solution;
+    Vector<double>       system_rhs;
+};
+
+template <int dim>
+class BoundaryValues : public Function<dim>
+{
+  public:
+    BoundaryValues () : Function<dim>() {}
+    virtual double value (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+};
+
+template <int dim>
+class RightHandSide : public Function<dim>
+{
+  public:
+    RightHandSide () : Function<dim>() {}
+    virtual double value (const Point<dim>   &p,
+                          const unsigned int  component = 0) const;
+};
+
+template <int dim>
+double BoundaryValues<dim>::value (const Point<dim> &p,
+                                   const unsigned int /*component*/) const
+{
+	return 0;                                                          //!!!!задаётся аналитическая функция для границы
+}
+
+template <int dim>
+double RightHandSide<dim>::value (const Point<dim> &p,
+                                  const unsigned int /*component*/) const
+{                                                                               //задаётся источник с минусом
+	return 0;
+}
+
+template <int dim>
+Step6<dim>::Step6 ()
+                :
+                dof_handler (triangulation),
+                fe (1)
+{}
+
+template <int dim>
+Step6<dim>::~Step6 ()
+{
+  dof_handler.clear ();
+}
+
+template <int dim>
+void Step6<dim>::setup_system ()
+{
+  dof_handler.distribute_dofs (fe);
+  solution.reinit (dof_handler.n_dofs());
+  system_rhs.reinit (dof_handler.n_dofs());
+  hanging_node_constraints.clear ();
+  DoFTools::make_hanging_node_constraints (dof_handler,
+                                           hanging_node_constraints);
+  hanging_node_constraints.close ();
+  CompressedSparsityPattern c_sparsity(dof_handler.n_dofs());
+  DoFTools::make_sparsity_pattern (dof_handler, c_sparsity);
+  hanging_node_constraints.condense (c_sparsity);
+  sparsity_pattern.copy_from(c_sparsity);
+  system_matrix.reinit (sparsity_pattern);
+}
+
+template <int dim>
+void Step6<dim>::assemble_system ()
+{
+  const QGauss<dim>  quadrature_formula(3);
+  QGauss<dim-1> face_quadrature_formula(3);
+  const RightHandSide<dim> right_hand_side;
+  const unsigned int n_face_q_points = face_quadrature_formula.size();
+  FEValues<dim> fe_values (fe, quadrature_formula,
+                           update_values    |  update_gradients |
+                           update_quadrature_points  |  update_JxW_values);
+  FEFaceValues<dim> fe_face_values (fe, face_quadrature_formula,
+                                      update_values         | update_quadrature_points  |
+                                      update_normal_vectors | update_JxW_values);
+  const unsigned int   dofs_per_cell = fe.dofs_per_cell;
+  const unsigned int   n_q_points    = quadrature_formula.size();
+  FullMatrix<double>   cell_matrix (dofs_per_cell, dofs_per_cell);
+  Vector<double>       cell_rhs (dofs_per_cell);
+  std::vector<unsigned int> local_dof_indices (dofs_per_cell);
+
+  typename DoFHandler<dim>::active_cell_iterator
+    cell = dof_handler.begin_active(),
+    endc = dof_handler.end();
+  for (; cell!=endc; ++cell)
+    {
+      cell_matrix = 0;
+	  
+      cell_rhs = 0;
+      fe_values.reinit (cell);
+      for (unsigned int q_point=0; q_point<n_q_points; ++q_point)
+        for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            for (unsigned int j=0; j<dofs_per_cell; ++j)
+
+            cell_matrix(i,j) += (mu_zx.value (fe_values.quadrature_point (q_point)) *
+                                 fe_values.shape_grad(i,q_point)[0] *
+                                 fe_values.shape_grad(j,q_point)[0] *
+                                 fe_values.JxW(q_point)
+
+                                 + mu_zy.value (fe_values.quadrature_point (q_point)) *
+                                 fe_values.shape_grad(i,q_point)[1] *
+                                 fe_values.shape_grad(j,q_point)[1] *
+                                 fe_values.JxW(q_point)
+                    );
+
+			cell_rhs(i) += (tau_zz.value(fe_values.quadrature_point (q_point)) *
+							fe_values.shape_value(i,q_point) *
+							fe_values.JxW(q_point) -
+
+							mu_zx.value (fe_values.quadrature_point (q_point)) *
+							fe_values.shape_grad(i,q_point)[0] *
+							u_x.value(fe_values.quadrature_point (q_point)) *
+							fe_values.JxW(q_point) -
+
+							mu_zy.value (fe_values.quadrature_point (q_point)) *
+							fe_values.shape_grad(i,q_point)[1] *
+							u_y.value(fe_values.quadrature_point (q_point)) *
+							fe_values.JxW(q_point)
+							);
+          }
+
+      cell->get_dof_indices (local_dof_indices);
+      for (unsigned int i=0; i<dofs_per_cell; ++i)
+        {
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+            system_matrix.add (local_dof_indices[i],
+                               local_dof_indices[j],
+                               cell_matrix(i,j));
+
+          system_rhs(local_dof_indices[i]) += cell_rhs(i);
+        }
+
+    }
+  
+  hanging_node_constraints.condense (system_matrix);
+  hanging_node_constraints.condense (system_rhs);
+  std::map<unsigned int,double> boundary_values;
+  MatrixTools::apply_boundary_values (boundary_values,
+                                      system_matrix,
+                                      solution,
+                                      system_rhs);
+}
+
+
+template <int dim>
+void Step6<dim>::solve ()
+{
+  SolverControl           solver_control (1000, 1e-4);
+  SolverCG<>              solver (solver_control);
+  PreconditionSSOR<> preconditioner;
+  preconditioner.initialize(system_matrix, 1.2);
+  solver.solve (system_matrix, solution, system_rhs,
+                preconditioner);
+  hanging_node_constraints.distribute (solution);
+}
+
+
+template <int dim>
+void Step6<dim>::refine_grid ()
+{
+  Vector<float> estimated_error_per_cell (triangulation.n_active_cells());
+  KellyErrorEstimator<dim>::estimate (dof_handler,
+                                      QGauss<dim-1>(3),
+                                      typename FunctionMap<dim>::type(),
+                                      solution,
+                                      estimated_error_per_cell);
+  GridRefinement::refine_and_coarsen_fixed_number (triangulation,
+                                                   estimated_error_per_cell,
+                                                   0.3, 0.03);
+  triangulation.execute_coarsening_and_refinement ();
+}
+
+
+template <int dim>
+void Step6<dim>::output_results () const
+{
+  std::string filename = "triangulation";
+  std::ofstream output (filename.c_str());
+  GridOut grid_out;
+  grid_out.write_eps (triangulation, output);
+}
+
+
+template<int dim>
+void Step6<dim>::calculate_grad_on_cells ()
+{
+    dealii::QGauss<dim> quadrature_formula(2);
+    dealii::FEValues<dim> fe_values (fe, quadrature_formula,
+            dealii::update_gradients | 
+            dealii::update_quadrature_points | dealii::update_JxW_values);
+    const uint8_t dofs_per_cell = fe.dofs_per_cell;
+    const uint8_t num_quad_points = quadrature_formula.size();
+	
+	double tau_zx=0.0, tau_zy=0.0, tau_zx_Analytical=0.0, tau_zy_Analytical=0.0;
+	double mashtab = 1.0;
+	FILE *Ftau;
+	Ftau = fopen ("Ftau.gpl","w");
+	
+	double deform = 0.0, deform0 = 0.0, deform1 = 0.0;
+	for (typename dealii::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active (); cell != dof_handler.end (); ++cell)
+	{
+			fe_values .reinit (cell);
+
+			double area = 0.0;
+			for(int i = 0; i < num_quad_points; ++i)
+				area += fe_values.JxW(i);
+		
+			Point<2> middle_of_cell(0.0,0.0);
+			
+			for (int i : {0, 1})	//x,y
+			{
+				deform = 0.0;
+				for(auto n : {0, 1, 2, 3})
+				{
+					double summ = 0.0;
+					for (size_t q_point = 0; q_point < num_quad_points; ++q_point)
+						summ += 
+							fe_values.shape_grad (n, q_point)[i] *
+							fe_values.JxW(q_point);
+						deform += 
+							solution(cell->vertex_dof_index(n, 0)) * 
+							summ;
+				};
+				if(i == 0) deform0 = deform / area;
+					else deform1 = deform / area;
+			};
+
+			middle_of_cell[0] = 0.25 * (cell->vertex(0)[0] + cell->vertex(1)[0] + cell->vertex(2)[0] + cell->vertex(3)[0]);
+			middle_of_cell[1] = 0.25 * (cell->vertex(0)[1] + cell->vertex(1)[1] + cell->vertex(2)[1] + cell->vertex(3)[1]);
+			
+			tau_zx = mu_zx.value(middle_of_cell)*(u_x.value(middle_of_cell) + deform0);
+			tau_zy = mu_zy.value(middle_of_cell)*(u_y.value(middle_of_cell) + deform1);
+			
+			double h=0.5/3;
+					switch( NumberOfProblem ) {
+						case 1:
+							if(middle_of_cell[0]<=-h)	{tau_zx_Analytical = 0.5*E_z1*(middle_of_cell[0]*middle_of_cell[0]-0.25);}
+								else	if(middle_of_cell[0]<=h)	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z2)*(middle_of_cell[0]*middle_of_cell[0]-h*h);}
+								else	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z3)*(middle_of_cell[0]*middle_of_cell[0]-h*h);}
+							break;
+						case 2:
+							if(middle_of_cell[0]<=-h)	{tau_zx_Analytical = 0.5*E_z1*(middle_of_cell[0]*middle_of_cell[0]-0.25);}
+								else	if(middle_of_cell[0]<=h)	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z2)*(middle_of_cell[0]*middle_of_cell[0]-h*h);}
+								else	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z3)*(middle_of_cell[0]*middle_of_cell[0]-h*h);}
+							break;
+						case 3:
+							if(middle_of_cell[0]<=-h)	{tau_zx_Analytical = 0.5*E_z1*(middle_of_cell[0]*middle_of_cell[0]-0.25);}
+								else	if(middle_of_cell[0]<=h)	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z2)*(middle_of_cell[0]*middle_of_cell[0]-h*h);}
+								else	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z3)*(middle_of_cell[0]*middle_of_cell[0]-h*h);}
+							break;
+						case 4:
+								tau_zx_Analytical = 0.5*E_z2*(middle_of_cell[0]*middle_of_cell[0]-0.25);
+							break;
+						case 5:
+								tau_zx_Analytical = 0.5*E_z2*(middle_of_cell[0]*middle_of_cell[0]-0.25);
+							break;
+						case 6:
+								tau_zx_Analytical = 0.5*E_z2*(middle_of_cell[0]*middle_of_cell[0]-0.25);
+							break;}
+						
+						tau_zx_Analytical = functionAnalisys.mygradientX(middle_of_cell);
+						tau_zy_Analytical = functionAnalisys.mygradientY(middle_of_cell);
+						
+						fprintf(Ftau,"%16.8f\t\t%16.8f\t\t%16.8e\t\t%16.8e\t\t%16.8e\t\t%16.8e\r\n", middle_of_cell[0], middle_of_cell[1], mashtab*tau_zx, mashtab*tau_zy, mashtab*tau_zx_Analytical, mashtab*tau_zy_Analytical);
+	}
+	fclose(Ftau);	
+};
+
+
+uint8_t Function1 (
+		const typename dealii::DoFHandler<2>::active_cell_iterator &cell,
+        FILE *Ftau,
+		double mashtab,
+		const dealii::Vector<double> &solution,
+		double& __Max_tau_zx,
+		double& __Max_tau_zy,
+        uint8_t i)
+{
+	double tau_zx=0.0, tau_zy=0.0, tau_zx_Analytical=0.0, tau_zy_Analytical=0.0;
+	double grX=0.0, grY=0.0;
+	dealii::Point<2, double> gr;
+					gr = get_grad<2> (cell, solution, i);
+					grX = gr[0];
+					grY = gr[1];
+					tau_zx = mu_zx.value(cell->vertex(i))*(u_x.value(cell->vertex(i)) + grX);
+					tau_zy = mu_zy.value(cell->vertex(i))*(u_y.value(cell->vertex(i)) + grY);
+
+					grX = functionAnalisys.mygradientX(cell->vertex(i));
+					grY = functionAnalisys.mygradientY(cell->vertex(i));
+					double h=0.5/3;
+					
+					
+					switch( NumberOfProblem ) {
+						case 1:
+							if(cell->vertex(i)[0]<=-h)	{tau_zx_Analytical = 0.5*E_z1*(cell->vertex(i)[0]*cell->vertex(i)[0]-0.25);}
+								else	if(cell->vertex(i)[0]<=h)	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z2)*(cell->vertex(i)[0]*cell->vertex(i)[0]-h*h);}
+								else	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z3)*(cell->vertex(i)[0]*cell->vertex(i)[0]-h*h);}
+							break;
+						case 2:
+							if(cell->vertex(i)[0]<=-h)	{tau_zx_Analytical = 0.5*E_z1*(cell->vertex(i)[0]*cell->vertex(i)[0]-0.25);}
+								else	if(cell->vertex(i)[0]<=h)	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z2)*(cell->vertex(i)[0]*cell->vertex(i)[0]-h*h);}
+								else	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z3)*(cell->vertex(i)[0]*cell->vertex(i)[0]-h*h);}
+							break;
+						case 3:
+							if(cell->vertex(i)[0]<=-h)	{tau_zx_Analytical = 0.5*E_z1*(cell->vertex(i)[0]*cell->vertex(i)[0]-0.25);}
+								else	if(cell->vertex(i)[0]<=h)	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z2)*(cell->vertex(i)[0]*cell->vertex(i)[0]-h*h);}
+								else	{tau_zx_Analytical = 0.5*E_z1*(h*h-0.25) + 0.5*(E_z3)*(cell->vertex(i)[0]*cell->vertex(i)[0]-h*h);}
+							break;
+						case 4:
+								tau_zx_Analytical = 0.5*E_z2*(cell->vertex(i)[0]*cell->vertex(i)[0]-0.25);
+							break;
+						case 5:
+								tau_zx_Analytical = 0.5*E_z2*(cell->vertex(i)[0]*cell->vertex(i)[0]-0.25);
+							break;
+						case 6:
+								tau_zx_Analytical = 0.5*E_z2*(cell->vertex(i)[0]*cell->vertex(i)[0]-0.25);
+							break;}
+
+					
+					
+					
+					tau_zy_Analytical = mu_zy.value(cell->vertex(i))*(u_y.value(cell->vertex(i)) + grY);
+					
+//					fprintf(Ftau,"%16.8f\t\t%16.8f\t\t%16.8e\t\t%16.8e\t\t%16.8e\t\t%16.8e\r\n", cell->vertex(i)[0], cell->vertex(i)[1], mashtab*tau_zx, mashtab*tau_zy, mashtab*tau_zx_Analytical, mashtab*tau_zy_Analytical);
+					
+					if(std::fabs( tau_zx_Analytical-tau_zx ) > __Max_tau_zx){__Max_tau_zx = std::fabs( tau_zx_Analytical-tau_zx );}
+					if(std::fabs( tau_zy_Analytical-tau_zy ) > __Max_tau_zy){__Max_tau_zy = std::fabs( tau_zy_Analytical-tau_zy );}
+//					Ave_tau_zx += std::fabs( tau_zx_Analytical-tau_zx );
+//					Ave_tau_zy += std::fabs( tau_zy_Analytical-tau_zy );
+    return 1;
+}
+
+
+template <int dim>
+void Step6<dim>::run ()
+{
+	double H = 0.0;
+	double point_p1_x=0.0, point_p1_y=0.0, point_p2_x=0.0, point_p2_y=0.0;
+  switch( NumberOfProblem ) {
+   case 1:
+//		const Point<2> p01(-0.5, -5.0), p02(0.5, 5.0);									//вершины прямоугольной области
+			H = 3.5;
+			point_p1_x=-0.5;
+			point_p1_y=-5.0;
+			point_p2_x=0.5;
+			point_p2_y=5.0;
+       break;
+   case 2:
+//		const Point<2> p01(-0.5, -2.5), p02(0.5, 2.5);									//вершины прямоугольной области
+			H = 1.75;
+			point_p1_x=-0.5;
+			point_p1_y=-2.5;
+			point_p2_x=0.5;
+			point_p2_y=2.5;
+       break;
+   case 3:
+//		const Point<2> p01(-0.5, -0.5), p02(0.5, 0.5);
+			point_p1_x=-0.5;
+			point_p1_y=-0.5;
+			point_p2_x=0.5;
+			point_p2_y=0.5;
+       break;
+   case 4:
+//		const Point<2> p1(-0.5, -0.5), p2(0.5, 0.5);
+			point_p1_x=-0.5;
+			point_p1_y=-0.5;
+			point_p2_x=0.5;
+			point_p2_y=0.5;
+       break;
+   case 5:
+//		const Point<2> p1(-0.5, -2.5), p2(0.5, 2.5);									//вершины прямоугольной области
+			H = 1.75;
+			point_p1_x=-0.5;
+			point_p1_y=-2.5;
+			point_p2_x=0.5;
+			point_p2_y=2.5;
+       break;
+   case 6:
+//		const Point<2> p1(-0.5, -5.0), p2(0.5, 5.0);									//вершины прямоугольной области
+			H = 3.5;
+			point_p1_x=-0.5;
+			point_p1_y=-5.0;
+			point_p2_x=0.5;
+			point_p2_y=5.0;
+       break;}
+  const Point<2> p1(point_p1_x, point_p1_y), p2(point_p2_x, point_p2_y);									//вершины прямоугольной области
+  
+//	const Point<2> p1(-0.5, -5.0), p2(0.5, 5.0);									//вершины прямоугольной области
+//	double H = 3.5;
+	FILE *FInformation;
+	FInformation = fopen ("FInformation.txt","w");
+		std::cout << "\tНомер задачи: " << NumberOfProblem << std::endl;
+		fprintf(FInformation,"\tНомер задачи: %d\n",NumberOfProblem);
+		std::cout << "\tкоординаты области: " << std::endl;
+		fprintf(FInformation,"\tкоординаты области: \n");
+		std::cout << "\t(" << p1[0] << ":" << p1[1] << ")" << "\t--------------------------------\t    (" << p1[0] << ":" << p2[1] << ")" << std::endl;
+		fprintf(FInformation,"\t(%8.4f:%8.4f)\t--------------------------------\t    (%8.4f:%8.4f)\n", p1[0], p1[1], p1[0], p2[1]);
+		std::cout << "\t   |" << "\t\t|\t\t\t\t" << "|\t\t|" << std::endl;
+		fprintf(FInformation,"\t\t   |\t\t\t\t|\t\t\t\t\t\t\t\t|\t\t\t|\n");
+		std::cout << "\t   |" << "\t\t|\t\t\t\t" << "|\t\t|" << std::endl;
+		fprintf(FInformation,"\t\t   |\t\t\t\t|\t\t\t\t\t\t\t\t|\t\t\t|\n");
+		std::cout << "\t   |" << "\t\t|\t\t\t\t" << "|\t\t|" << std::endl;
+		fprintf(FInformation,"\t\t   |\t\t\t\t|\t\t\t\t\t\t\t\t|\t\t\t|\n");
+		std::cout << "\t(" << p2[0] << ":" << p1[1] << ")" << "\t--------------------------------\t    (" << p2[0] << ":" << p2[1] << ")" << std::endl << std::endl;
+		fprintf(FInformation,"\t(%8.4f:%8.4f)\t--------------------------------\t    (%8.4f:%8.4f)\n",p2[0],p1[1],p2[0],p2[1]);
+		
+		switch( NumberOfProblem ) {
+		   case 1:
+				std::cout << "\tделение области на три ячейки вдоль Y.  H = " << H << std::endl;
+				fprintf(FInformation,"\tделение области на три ячейки вдоль Y.  H = %8.4f\n", H);
+			   break;
+		   case 2:
+				std::cout << "\tделение области на три ячейки вдоль Y.  H = " << H << std::endl;
+				fprintf(FInformation,"\tделение области на три ячейки вдоль Y.  H = %8.4f\n", H);
+			   break;
+		   case 3:
+			   break;
+		   case 4:
+			   break;
+		   case 5:
+				std::cout << "\tделение области на три ячейки вдоль Y.  H = " << H << std::endl;
+				fprintf(FInformation,"\tделение области на три ячейки вдоль Y.  H = %8.4f\n", H);
+			   break;
+		   case 6:
+				std::cout << "\tделение области на три ячейки вдоль Y.  H = " << H << std::endl;
+				fprintf(FInformation,"\tделение области на три ячейки вдоль Y.  H = %8.4f\n", H);
+			   break;}
+		
+		
+//				switch( NumberOfProblem ) {
+//		   case 3:
+//			   GridGenerator::hyper_rectangle(triangulation, p1, p2);						//задание прямоугольника
+//			   break;
+//		   case 4:
+//			   GridGenerator::hyper_rectangle(triangulation, p1, p2);						//задание прямоугольника
+//			   break;
+//		   default:
+//								std::vector<Point< 2 > > v (8);
+//								v[0][0] = p1[0]; v[0][1] = p1[1];
+//								v[1][0] = p1[0]; v[1][1] = -H;
+//								v[2][0] = p1[0]; v[2][1] = H;
+//								v[3][0] = p1[0]; v[3][1] = p2[1];
+//								v[4][0] = p2[0]; v[4][1] = p1[1];
+//								v[5][0] = p2[0]; v[5][1] = -H;
+//								v[6][0] = p2[0]; v[6][1] = H;
+//								v[7][0] = p2[0]; v[7][1] = p2[1];
+//
+//								std::vector< CellData< 2 > > c (3, CellData<2>());
+//								c[0].vertices[0] = 0;
+//								c[0].vertices[1] = 1;
+//								c[0].vertices[2] = 4;
+//								c[0].vertices[3] = 5;
+//								c[0].material_id = 0;
+//
+//								c[1].vertices[0] = 1;
+//								c[1].vertices[1] = 2;
+//								c[1].vertices[2] = 5;
+//								c[1].vertices[3] = 6;
+//								c[1].material_id = 0;
+//
+//								c[2].vertices[0] = 2;
+//								c[2].vertices[1] = 3;
+//								c[2].vertices[2] = 6;
+//								c[2].vertices[3] = 7;
+//								c[2].material_id = 0;
+//
+//								triangulation.create_triangulation (v, c, SubCellData());
+//			   break;}
+//      triangulation.refine_global (N);                                          //меняется рефайн
+	  set_grid(triangulation);
+	  
+	  
+	  
+	  
+	  
+      std::cout << "\tNumber of active cells:       "
+                << triangulation.n_active_cells()
+                << std::endl;
+	  fprintf(FInformation,"\tNumber of active cells:       %d\n",triangulation.n_active_cells());
+      setup_system ();
+      std::cout << "\tNumber of degrees of freedom: "
+                << dof_handler.n_dofs()
+                << std::endl;
+	  fprintf(FInformation,"\tNumber of degrees of freedom: %d\n",dof_handler.n_dofs());
+	  std::cout << "\tКоличество рефайнов: "
+                << N
+                << std::endl;
+	  fprintf(FInformation,"\tКоличество рефайнов: %d\n",N);
+	  int CountOfCells=1;
+	  for(int i=0;i<N;++i) {CountOfCells *= 2;}
+	  std::cout << "\tколичество ячеек по высоте балки (вдоль X): "
+				<< CountOfCells
+                << std::endl;
+	  fprintf(FInformation,"\tколичество ячеек по ширине балки (вдоль X): %d\n",CountOfCells);
+	  
+	  
+	  switch( NumberOfProblem ) {
+		   case 3:
+				std::cout << "\tколичество ячеек по ширине балки (вдоль Y): "
+				<< CountOfCells
+                << std::endl;
+				fprintf(FInformation,"\tколичество ячеек по ширине балки (вдоль Y): %d\n",CountOfCells);
+			   break;
+		   case 4:
+				std::cout << "\tколичество ячеек по ширине балки (вдоль Y): "
+				<< CountOfCells
+                << std::endl;
+				fprintf(FInformation,"\tколичество ячеек по ширине балки (вдоль Y): %d\n",CountOfCells);
+			   break;
+		   default:
+				std::cout << "\tколичество ячеек по ширине балки (вдоль Y): "
+				<< CountOfCells*3
+                << std::endl;
+				fprintf(FInformation,"\tколичество ячеек по ширине балки (вдоль Y): %d\n",CountOfCells*3);
+			   break;}
+	  
+	  
+	  
+	  
+	  fclose(FInformation);
+//------------------------------------------------------------------------------
+//==============================================================================
+//------------------------------------------------------------------------------
+//            typename Triangulation<dim>::cell_iterator                          //индикатор для границы 2-го рода
+//              cell = triangulation.begin (),
+//              endc = triangulation.end();
+//            for (; cell!=endc; ++cell)
+//              for (unsigned int face=0; face<GeometryInfo<dim>::faces_per_cell; ++face)
+//                if (
+////						  (std::fabs(cell->face(face)->center()(1) - (p1(1))) < 1e-12)
+////						||
+////						  (std::fabs(cell->face(face)->center()(0) - (p1(0))) < 1e-12)
+////						||
+//						  (std::fabs(cell->face(face)->center()(0) - (p2(0))) < 1e-12)
+//						||
+//						  (std::fabs(cell->face(face)->center()(1) - (p2(1))) < 1e-12)
+//					)
+//                  cell->face(face)->set_boundary_indicator (1);
+//------------------------------------------------------------------------------
+//==============================================================================
+      assemble_system ();
+      solve ();
+      output_results();
+//==============================================================================
+//------------------------------------------------------------------------------
+//                                                                                //увеличение на константу
+//    std::cout << "Прибавление константы C1 к решению..\n";
+//    int bufferr0;
+//	double C1 = -0.01407;
+//	std::cout << "C1 = " << C1 << "\n";
+//	    for (typename dealii::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active (); cell != dof_handler.end (); ++cell)
+//        for (uint8_t i = 0; i < dealii::GeometryInfo<dim>::vertices_per_cell; ++i)
+//            {
+//				bufferr0 = cell->vertex_dof_index (i,0);
+//				if (
+//						  (std::fabs(cell->vertex(i)[1] - (p1(1))) < 1e-12)
+//						||
+//						  (std::fabs(cell->vertex(i)[0] - (p1(0))) < 1e-12)
+//						||
+//						  (std::fabs(cell->vertex(i)[0] - (p2(0))) < 1e-12)
+//						||
+//						  (std::fabs(cell->vertex(i)[1] - (p2(1))) < 1e-12)
+//					)
+//				solution[cell->vertex_dof_index (i,0)] += C1*0.5;
+//				else solution[cell->vertex_dof_index (i,0)] += C1*0.25;
+//				if (
+//						  (std::fabs(cell->vertex(i)[0] - (p1(0))) < 1e-12) && (std::fabs(cell->vertex(i)[1] - (p1(1))) < 1e-12)
+//						||
+//						  (std::fabs(cell->vertex(i)[0] - (p1(0))) < 1e-12) && (std::fabs(cell->vertex(i)[1] - (p2(1))) < 1e-12)
+//						||
+//						  (std::fabs(cell->vertex(i)[0] - (p2(0))) < 1e-12) && (std::fabs(cell->vertex(i)[1] - (p2(1))) < 1e-12)
+//						||
+//						  (std::fabs(cell->vertex(i)[0] - (p2(0))) < 1e-12) && (std::fabs(cell->vertex(i)[1] - (p1(1))) < 1e-12)
+//					)
+//				solution[cell->vertex_dof_index (i,0)] += C1*0.5;
+//            }
+//------------------------------------------------------------------------------
+//==============================================================================
+
+  DataOutBase::EpsFlags eps_flags;
+  eps_flags.z_scaling = 4;
+  DataOut<dim> data_out_eps;
+  data_out_eps.set_flags (eps_flags);
+  data_out_eps.attach_dof_handler (dof_handler);
+  data_out_eps.add_data_vector (solution, "solution");
+  data_out_eps.build_patches ();
+  std::ofstream output_eps ("U_z.eps");
+  data_out_eps.write_eps (output_eps);
+
+//  ----------------------------------------------------------------------------
+
+  DataOut<dim> data_out_gpl;
+  data_out_gpl.attach_dof_handler (dof_handler);
+  data_out_gpl.add_data_vector (solution, "solution");
+  data_out_gpl.build_patches ();
+  std::ofstream output_gpl ("U_z.gpl");
+  data_out_gpl.write_gnuplot (output_gpl);
+
+//==============================================================================
+//------------------------------------------------------------------------------
+                                                                                //Сравнение результатов
+    FILE *Fcomparing;
+    Fcomparing = fopen ("Fcomparing.txt","w");
+    fprintf(Fcomparing,"  Fa\t\t\t   F\t\t\t  abserror\t\t    mape\n");
+    std::cout << "\nСравнение результата с аналитическим решением ..\n";
+    double FunAnalitic, FunSolution, buffer, buffer2, buffer3, MaxAbs=-1.0, MaxMape=-1.0, ii=0;
+    for (typename dealii::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active (); cell != dof_handler.end (); ++cell)
+        for (uint8_t i = 0; i < dealii::GeometryInfo<dim>::vertices_per_cell; ++i)
+            {
+					FunAnalitic = functionAnalisys.value(cell->vertex(i));
+
+                    buffer = cell->vertex_dof_index (i,0);                                                                              //индекс вектора решений
+                    FunSolution = solution[buffer];                                                                                     //значение вектора решения
+                    buffer2 = fabs(FunAnalitic-FunSolution);                                                                            //абсолютная ошибка
+                    if(buffer2 > MaxAbs) MaxAbs = buffer2;
+					buffer3 = fabs(buffer2/FunAnalitic*100.0);                                                                            //относительная ошибка
+                    if((buffer3 > MaxMape)&&(FunAnalitic!=0.0)) MaxMape = buffer3;
+                    fprintf(Fcomparing,"%8.4f\t\t%8.4f\t\t%8.4e\t\t%8.4e\n", FunAnalitic, FunSolution, buffer2, buffer3);                        //вывод в файл значений, и ошибок
+            }
+    fprintf(Fcomparing,"\t\tMaxAbs:  %8.4e\t\tMaxMape:  %8.4e\n", MaxAbs, MaxMape);
+    std::cout << "\tMaxAbs:\t" << MaxAbs << "\tMaxMape:\t" << MaxMape << "\n";
+//	FILE *FInformation;
+	FInformation = fopen ("FInformation.txt","a");
+	fprintf(FInformation,"\n\tMaxAbs:\t%16.8f\tMaxMape:\t%16.8f\n", MaxAbs, MaxMape);
+	fclose(FInformation);
+    fclose(Fcomparing);
+	
+//------------------------------------------------------------------------------
+//==============================================================================
+//------------------------------------------------------------------------------
+                                                                                //Вывод ошибок в файл GNUPLOT
+    FILE *FerrorABS;
+    FILE *FerrorMAPE;
+    FerrorABS = fopen ("FerrorABS.gpl","w");
+    FerrorMAPE = fopen ("FerrorMAPE.gpl","w");
+    std::cout << "\nВывод абсолютной и относительной ошибок в два отдельных файла *.gpl\n";
+    for (typename dealii::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active (); cell != dof_handler.end (); ++cell)
+        for (uint8_t i = 0; i < dealii::GeometryInfo<dim>::vertices_per_cell; ++i)
+            {
+					FunAnalitic = functionAnalisys.value(cell->vertex(i));
+
+                    buffer = cell->vertex_dof_index (i,0);
+                    FunSolution = solution[buffer];
+                    buffer2 = fabs(FunAnalitic-FunSolution);
+                    buffer3 = fabs(buffer2/FunAnalitic*100);
+                    fprintf(FerrorABS,"%8.4f\t\t%8.4f\t\t%8.4e\n", cell->vertex(i)[0], cell->vertex(i)[1], buffer2);
+                    fprintf(FerrorMAPE,"%8.4f\t\t%8.4f\t\t%8.4e\n", cell->vertex(i)[0], cell->vertex(i)[1], buffer3);
+            }
+    fclose(FerrorABS);
+    fclose(FerrorMAPE);
+
+//------------------------------------------------------------------------------
+//==============================================================================
+//------------------------------------------------------------------------------
+                                                                                //создание GNUPLOT файла выводещего значения аналитической функции
+    FILE *FAnaliticFun;
+    FAnaliticFun = fopen ("FAnaliticFun.gpl","w");
+    fprintf(FAnaliticFun,"  Fa\t\t\t   F\t\t\t  abserror\t\t    mape\n");
+    std::cout << "\nВывод аналитического решения в gnuplot файл ..\n";
+    for (typename dealii::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active (); cell != dof_handler.end (); ++cell)
+        for (uint8_t i = 0; i < dealii::GeometryInfo<dim>::vertices_per_cell; ++i)
+            {
+					FunAnalitic = functionAnalisys.value(cell->vertex(i));
+                    fprintf(FAnaliticFun,"%8.4f\t\t%8.4f\t\t%8.4e\n", cell->vertex(i)[0], cell->vertex(i)[1], FunAnalitic);                        //вывод в файл значений аналитической функции
+            }
+    fclose(FAnaliticFun);
+
+//------------------------------------------------------------------------------
+
+  const QGauss<dim>  quadrature_formula(3);
+  QGauss<dim-1> face_quadrature_formula(3);
+  const RightHandSide<dim> right_hand_side;
+  const unsigned int n_face_q_points = face_quadrature_formula.size();
+  FEValues<dim> fe_values (fe, quadrature_formula,
+                           update_values    |  update_gradients |
+                           update_quadrature_points  |  update_JxW_values);
+  FEFaceValues<dim> fe_face_values (fe, face_quadrature_formula,
+                                      update_values         | update_quadrature_points  |
+                                      update_normal_vectors | update_JxW_values);
+  const unsigned int   dofs_per_cell = fe.dofs_per_cell;
+  const unsigned int   n_q_points    = quadrature_formula.size();
+  FullMatrix<double>   cell_matrix (dofs_per_cell, dofs_per_cell);
+  Vector<double>       cell_rhs (dofs_per_cell);
+  std::vector<unsigned int> local_dof_indices (dofs_per_cell);
+  double FS;
+  typename DoFHandler<dim>::active_cell_iterator
+    cell = dof_handler.begin_active(),
+    endc = dof_handler.end();
+//  for (; cell!=endc; ++cell)
+//    {
+//      fe_values.reinit (cell);
+//      for (unsigned int q_point=0; q_point<n_q_points; ++q_point)
+//        for (unsigned int i=0; i<dofs_per_cell; ++i)
+//          {
+////            for (unsigned int j=0; j<dofs_per_cell; ++j)
+//
+//            buffer = cell->vertex_dof_index (i,0);
+//            FS = solution[buffer];
+//			integral +=	( FS ) * fe_values.JxW(q_point);
+//
+//          }
+//	}
+//	std::cout << "значение интеграла integral C1\t" << integral/4 << "\n";
+
+  integral=0; FS=0;
+  for (; cell!=endc; ++cell)
+    {
+      fe_values.reinit (cell);
+      for (unsigned int q_point=0; q_point<n_q_points; ++q_point)
+          {
+            FS = functionAnalisys.value (fe_values.quadrature_point (q_point));
+			integral +=	FS*fe_values.JxW(q_point);
+		  }
+	}
+	std::cout << "значение интеграла аналитической функции integral C1\t" << integral << "\n";
+//	FILE *FInformation;
+	FInformation = fopen ("FInformation.txt","a");
+	fprintf(FInformation,"\nзначение интеграла аналитической функции integral C1\t%16.8f\n", integral);
+	fclose(FInformation);
+//------------------------------------------------------------------------------
+//==============================================================================
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//==============================================================================
+//------------------------------------------------------------------------------
+                                                                                //создание GNUPLOT файла выводещего значения tau_zx b tau_zy
+//    FILE *Ftau;
+	double Max_tau_zy=-1.001, Ave_tau_zx=0.0, Ave_tau_zy=0.0;
+	double Max_tau_zx=-1.001;
+	double mashtab=1.0;
+//    Ftau = fopen ("Ftau.gpl","w");
+    std::cout << "\nВывод tau в gnuplot файл Ftau.gpl ..\n";
+
+	double PreBoundaryX, PreBoundaryY;
+	
+	switch( NumberOfProblem ) {
+		   case 3:
+					PreBoundaryX = (p2[0]-p1[0])/CountOfCells;
+					PreBoundaryY = (p2[1]-p1[1])/CountOfCells;
+			   break;
+		   case 4:
+					PreBoundaryX = (p2[0]-p1[0])/CountOfCells;
+					PreBoundaryY = (p2[1]-p1[1])/CountOfCells;
+			   break;
+		   default:
+					PreBoundaryX = (p2[0]-p1[0])/CountOfCells;
+					PreBoundaryY = ((p2[1]-p1[1])/2-H)/CountOfCells;
+			   break;}
+	
+	
+	int u;
+	std::cout << "PreBoundaryX = " << PreBoundaryX << "\n";
+	std::cout << "PreBoundaryY = " << PreBoundaryY << "\n";
+//	FILE *FInformation;
+	FInformation = fopen ("FInformation.txt","a");
+	fprintf(FInformation,"\nPreBoundaryX = %16.8f\n", PreBoundaryX);
+	fprintf(FInformation,"PreBoundaryY = %16.8f\n", PreBoundaryY);
+	fclose(FInformation);
+	
+//	for (typename dealii::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active (); cell != dof_handler.end (); ++cell)	//при использовании CGAL становится больше точек сетки на графиках функций Tau_zx и Tau_zy
+//		 {
+////				u = Function1(cell,Ftau,mashtab,solution,Max_tau_zx,Max_tau_zy,0);
+//				u = Function1(cell,Ftau,mashtab,solution,Max_tau_zx,Max_tau_zy,1);
+////				u = Function1(cell,Ftau,mashtab,solution,Max_tau_zx,Max_tau_zy,2);
+////				u = Function1(cell,Ftau,mashtab,solution,Max_tau_zx,Max_tau_zy,3);
+//         }
+	
+			
+	std::cout << "Max_tau_zx = " << Max_tau_zx << "\n";
+	std::cout << "Max_tau_zy = " << Max_tau_zy << "\n";
+//	FILE *FInformation;
+	FInformation = fopen ("FInformation.txt","a");
+	fprintf(FInformation,"Max_tau_zx = %16.8f\n", Max_tau_zx);
+	fprintf(FInformation,"Max_tau_zy = %16.8f\n", Max_tau_zy);
+		
+	std::cout << "\n E_z1 = " << E_z1 << "\n";
+	fprintf(FInformation,"\n E_z1 = %16.8f\n", E_z1);
+	std::cout << "\n E_z2 = " << E_z2 << "\n";
+	fprintf(FInformation,"\n E_z2 = %16.8f\n", E_z2);
+	std::cout << "\n E_z3 = " << E_z3 << "\n";
+	fprintf(FInformation,"\n E_z3 = %16.8f\n", E_z3);
+	std::cout << "\n nui = " << nui << "\n";
+	fprintf(FInformation,"\n nui = %16.8f\n", nui);
+	
+	fclose(FInformation);
+//	fclose(Ftau);
+//	fclose(FtauAnalytical);
+}
+
+
+
+int main ()
+{
+  try
+    {
+      deallog.depth_console (0);
+
+      Step6<2> laplace_problem_2d;
+      laplace_problem_2d.run ();
+	  laplace_problem_2d.calculate_grad_on_cells ();
+    }
+  catch (std::exception &exc)
+    {
+      std::cerr << std::endl << std::endl
+                << "----------------------------------------------------"
+                << std::endl;
+      std::cerr << "Exception on processing: " << std::endl
+                << exc.what() << std::endl
+                << "Aborting!" << std::endl
+                << "----------------------------------------------------"
+                << std::endl;
+      return 1;
+    }
+
+  catch (...)
+    {
+      std::cerr << std::endl << std::endl
+                << "----------------------------------------------------"
+                << std::endl;
+      std::cerr << "Unknown exception!" << std::endl
+                << "Aborting!" << std::endl
+                << "----------------------------------------------------"
+                << std::endl;
+      return 1;
+    }
+  
+  return 0;
+}

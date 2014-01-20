@@ -1,0 +1,21 @@
+#!/bin/bash
+#добавление в файл Ftau.gpl данных об абсолютных и относительных ошибках
+rm '/home/rst/deal.II/rjkz_2/Ftau.gpl'
+cp '/home/rst/deal.II/rjkz_2/Ftau_old.gpl'  '/home/rst/deal.II/rjkz_2/Ftau.gpl'
+rm '/home/rst/deal.II/rjkz_2/Ftau_old.gpl'
+
+cd '/home/rst/deal.II/rjkz_2'
+rm a.sh.*.png
+
+rm b.sh.*.png
+
+rm c.sh.*.png
+
+rm sections*.gpl
+
+rm tau_z*.png
+
+rm U_z*.png
+
+
+

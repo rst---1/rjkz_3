@@ -1,0 +1,100 @@
+
+CurveGrid_Precision tau_zx y(0.0).gpl:
+
+Max_Box_abs = 0.000647
+Max_Box_otn = 8.83873190903
+
+Ave_Box_abs = 0.00020688
+Ave_Box_otn = 0.688318144794
+Ave_Box = -0.0764397757576
+
+
+//==============================
+CurveGrid_Precision tau_zx y(0.491).gpl:
+
+Max_Box_abs = 0.001738
+Max_Box_otn = 9.882861367
+
+Ave_Box_abs = 0.00042544214876
+Ave_Box_otn = 0.858217303536
+Ave_Box = -0.0957331082645
+
+
+//==============================
+CurveGrid_Precision tau_zx y(-0.333).gpl:
+
+Max_Box_abs = 0.000908
+Max_Box_otn = 10.2697139917
+
+Ave_Box_abs = 0.000178535172414
+Ave_Box_otn = 0.701580778746
+Ave_Box = -0.0836996862069
+
+
+//==============================
+CurveGrid_Precision tau_zx y(0.25).gpl:
+
+Max_Box_abs = 0.0006105
+Max_Box_otn = 8.7309078428
+
+Ave_Box_abs = 0.000155871895425
+Ave_Box_otn = 0.558638549029
+Ave_Box = -0.0791086601307
+
+
+//==============================
+CurveGrid_Precision tau_zx y(-0.25).gpl:
+
+Max_Box_abs = 0.0006247
+Max_Box_otn = 8.87887660252
+
+Ave_Box_abs = 0.000157013636364
+Ave_Box_otn = 0.563601075743
+Ave_Box = -0.0792378474026
+
+
+//==============================
+CurveGrid_Precision tau_zx y(0.166).gpl:
+
+Max_Box_abs = 0.000875
+Max_Box_otn = 9.11550370625
+
+Ave_Box_abs = 0.000209119047619
+Ave_Box_otn = 0.735862163693
+Ave_Box = -0.0790005714286
+
+
+//==============================
+CurveGrid_Precision tau_zx y(-0.166).gpl:
+
+Max_Box_abs = 0.000843
+Max_Box_otn = 9.10328638498
+
+Ave_Box_abs = 0.000209136734694
+Ave_Box_otn = 0.737558649614
+Ave_Box = -0.0790003394558
+
+
+//==============================
+CurveGrid_Precision tau_zx y(0.333).gpl:
+
+Max_Box_abs = 0.000907
+Max_Box_otn = 10.3183987463
+
+Ave_Box_abs = 0.00017868137931
+Ave_Box_otn = 0.702970673101
+Ave_Box = -0.0836945027586
+
+
+//==============================
+CurveGrid_Precision tau_zx y(-0.491).gpl:
+
+Max_Box_abs = 0.001737
+Max_Box_otn = 9.87380627558
+
+Ave_Box_abs = 0.000425114876033
+Ave_Box_otn = 0.857582362271
+Ave_Box = -0.0957276057851
+
+
+//==============================
